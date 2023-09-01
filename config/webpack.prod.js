@@ -11,8 +11,8 @@ module.exports = merge(common, {
     devtool: false,
     output: {
         path: paths.build,
-        publicPath: '/',
-        filename: 'js/[name].[contenthash].bundle.js'
+        publicPath: 'https://12rita.github.io/Giftcard',
+        filename: '[name].bundle.js'
     },
     plugins: [
         // Extracts CSS into separate files

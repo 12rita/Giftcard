@@ -1,7 +1,14 @@
 .app-container {
     color: white;
-    background-color: black;
+    background-color: coral;
     text-align: center;
-    height: 100%;
+    //height: 100%;
     width: 100%;
+}
+.wrapper {
+    background: antiquewhite;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
 }
