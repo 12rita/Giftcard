@@ -1,0 +1,39 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "es2017": true
+  },
+  "extends": [
+    "plugin:prettier/recommended",
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "parser": "@babel/eslint-parser",
+  "plugins": [
+    "react-hooks",
+    "prettier",
+    "react"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    //  "indent": ["error", 4, {"SwitchCase": 1}],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "semi": ["error", "always"],
+    "jsx-quotes": [2, "prefer-double"],
+    "no-console": ["warn", { "allow": ["warn"] }],
+    "react/display-name": "off",
+    "react/prop-types": "off",
+    "template-curly-spacing": "off",
+    "prettier/prettier": ["error"],
+    "comma-dangle": ["error", "never"],
+    "arrow-parens": ["error", "as-needed"],
+  },
+  "globals": {
+    "require": true
+  },
+  "ignorePatterns": ["webpack.config.ts", "node_modules/"]
+
+}
