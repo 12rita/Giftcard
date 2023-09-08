@@ -1,10 +1,17 @@
 const paths = require('./paths');
-
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 
-module.exports = merge(common, {
+// const env = dotenv.config({ path: paths.envPath }).parsed;
+//
+// // reduce it to a nice object, the same as before
+// const envKeys = Object.keys(env).reduce((prev, next) => {
+//     prev[`process.env.${next}`] = JSON.stringify(env[next]);
+//     return prev;
+// }, {});
+
+module.exports = merge(common(), {
     // Set the mode to development or production
     mode: 'development',
 
@@ -25,30 +32,8 @@ module.exports = merge(common, {
 
     plugins: [
         // Only update what has changed on hot reload
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.DefinePlugin({
-            'process.env.REACT_APP_OPENCAGE_API_KEY': JSON.stringify(
-                process.env.REACT_APP_OPENCAGE_API_KEY
-            ),
-            'process.env.REACT_APP_FIREBASE_API_KEY': JSON.stringify(
-                process.env.REACT_APP_FIREBASE_API_KEY
-            ),
-            'process.env.REACT_APP_FIREBASE_AUTH_DOMAIN': JSON.stringify(
-                process.env.REACT_APP_FIREBASE_AUTH_DOMAIN
-            ),
-            'process.env.REACT_APP_PROJECT_ID': JSON.stringify(
-                process.env.REACT_APP_PROJECT_ID
-            ),
-            'process.env.REACT_APP_FIREBASE_STORAGE_BUCKET': JSON.stringify(
-                process.env.REACT_APP_FIREBASE_STORAGE_BUCKET
-            ),
-            'process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID':
-                JSON.stringify(
-                    process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID
-                ),
-            'process.env.REACT_APP_FIREBASE_API_ID': JSON.stringify(
-                process.env.REACT_APP_FIREBASE_API_ID
-            )
-        })
+
+        new webpack.HotModuleReplacementPlugin()
+        // new webpack.DefinePlugin(envKeys)
     ]
 });
