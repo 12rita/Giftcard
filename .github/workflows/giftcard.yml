@@ -28,7 +28,7 @@ jobs:
       - name: Build
         run: |
           npm install --force
-          npm run-script build
+          npm run build
         env:
           REACT_APP_OPENCAGE_API_KEY: ${{ secrets.REACT_APP_OPENCAGE_API_KEY }}
 
