@@ -6,12 +6,12 @@ import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: 'AIzaSyAGTRDR9KpZPNICRh6Eph-FnoRmgUyCuZ0',
-    authDomain: 'giftcard-a9a75.firebaseapp.com',
-    projectId: 'giftcard-a9a75',
-    storageBucket: 'giftcard-a9a75.appspot.com',
-    messagingSenderId: '451665703337',
-    appId: '1:451665703337:web:e0e5a06762a47c965c54b8'
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_API_ID
 };
 
 // Initialize Firebase

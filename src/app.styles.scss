@@ -1,14 +1,27 @@
 .app-container {
     color: white;
-    background-color: coral;
+    //background-color: coral;
     text-align: center;
     //height: 100%;
     width: 100%;
 }
+.hidden {
+    display: none;
+}
+.header {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 500;
+}
+.footer {
+    margin-left: auto;
+}
 .wrapper {
-    background: antiquewhite;
+    background: #03473a;
     display: flex;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
 }

@@ -46,6 +46,7 @@
         "postcss-preset-env": "^7.8.3",
         "prettier": "^2.8.1",
         "prettier-eslint": "^15.0.1",
+        "react-query": "^4.0.0",
         "sass": "^1.57.1",
         "sass-loader": "^13.2.0",
         "style-loader": "^3.3.1",
@@ -55,9 +56,14 @@
         "webpack-merge": "^5.8.0"
     },
     "dependencies": {
+        "@amcharts/amcharts5": "^5.4.6",
+        "@amcharts/amcharts5-geodata": "^5.1.1",
+        "@ant-design/icons": "^5.2.6",
         "@babel/eslint-parser": "^7.22.11",
         "@babel/preset-react": "^7.22.5",
+        "antd": "^5.9.0",
         "firebase": "^10.3.1",
+        "opencage-api-client": "^1.0.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "terser-webpack-plugin": "^5.3.9"
