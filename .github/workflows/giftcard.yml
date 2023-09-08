@@ -25,6 +25,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+      - name: Run key
+        run: echo ${{ secrets.REACT_APP_OPENCAGE_API_KEY }}
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
