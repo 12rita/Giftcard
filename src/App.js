@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './app.styles.scss';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Map } from './Map/Map';
@@ -13,13 +13,36 @@ export const queryClient = new QueryClient({
     }
 });
 
+// const callBackendAPI = async () => {
+//     const response = await fetch('/api');
+//     console.log(response.url);
+//     const body = await response.text();
+//
+//     if (response.status !== 200) {
+//         throw Error(body.message);
+//     }
+//     return body;
+// };
+
 const App = () => {
+    // const [state, setState] = useState(null);
+    //
+    // // получение GET маршрута с сервера Express, который соответствует GET из server.js
+    // useEffect(() => {
+    //     callBackendAPI()
+    //         .then(res => {
+    //             console.log(res);
+    //             setState(res.express);
+    //         })
+    //         .catch(err => console.log(err));
+    // }, []);
+
     return (
         <QueryClientProvider client={queryClient}>
             <div className={'wrapper'}>
                 <div className="app-container">
                     <div className="header">
-                        <div>Кабэшные перемещения</div>
+                        <div>Кабэ в России и мире</div>
                         <div className="footer">
                             <AddDrawer />
                         </div>
