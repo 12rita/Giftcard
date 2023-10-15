@@ -3,11 +3,12 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const path = require("path");
 
 module.exports = () => {
     return {
         // Where webpack looks to start building the bundle
-        entry: ['./src/index.js'],
+        entry: ['./src/index.tsx'],
 
         // Where webpack outputs the assets and bundles
         output: {
@@ -44,15 +45,28 @@ module.exports = () => {
                 filename: 'index.html' // output file
             })
         ],
+        resolve: {
+            extensions: ['.ts', '.tsx', '.js'],
+            modules: [
+                // path.join(__dirname, 'src/local'),
+                // path.join(__dirname, 'src/global'),
+                path.join(__dirname, 'src/api'),
+                path.join(__dirname, 'src/assets'),
+                path.join(__dirname, 'src/Map'),
+                path.join(__dirname, 'src/modules'),
+                path.join(__dirname, 'src/static'),
+                'node_modules'
+            ],
+        },
 
         // Determine how modules within the project are treated
         module: {
             rules: [
                 // JavaScript: Use Babel to transpile JavaScript files
                 {
-                    test: /\.(js|jsx)$/,
+                    test: /\.(js|jsx|tsx|ts)$/,
                     exclude: /node_modules/,
-                    use: ['babel-loader']
+                    use: 'ts-loader'
                 },
 
                 // Styles: Inject CSS into the head with source maps

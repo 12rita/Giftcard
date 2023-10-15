@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import * as React from 'react';
+import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import countries_ru from '../static/countries_ru.json';
+import countries_ru from '../../static/countries_ru.json';
 import {
     Button,
     Col,
@@ -13,14 +14,24 @@ import {
     Space,
     Upload,
     Modal,
-    message
+    message,
+    UploadFile
 } from 'antd';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
+
+import { useSingleMutation } from './useSingleMutation';
+import { queryClient } from '../../App';
+import { RcFile } from 'antd/es/upload';
 
 const MB_SIZE = 1024 * 1024;
 
-const getBase64 = file =>
+interface IPostData {
+    dateTime: string;
+    owner: string;
+    country: string;
+    files: { name: string; base64: string }[];
+    description: string;
+}
+const getBase64 = (file: RcFile): Promise<string | ArrayBuffer> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -33,20 +44,9 @@ const AddDrawer = () => {
     const [form] = Form.useForm();
     const [submittable, setSubmittable] = React.useState(false);
 
-    // Watch all values
-    const values = Form.useWatch([], form);
+    const saveData = useSingleMutation<IPostData>('/api/map/save');
 
-    const savePost = async post => {
-        try {
-            await addDoc(collection(db, 'countryTests'), { post });
-            message.success('Ваша фоточка успешно загружена!');
-            onClose();
-            // console.log('Document written with ID: ', docRef.id);
-        } catch (e) {
-            message.error('Что-то пошло не так, попробуйте еще раз!');
-            // console.error('Error adding document: ', e);
-        }
-    };
+    const values = Form.useWatch([], form);
 
     React.useEffect(() => {
         form.validateFields({ validateOnly: true }).then(
@@ -71,30 +71,35 @@ const AddDrawer = () => {
     const onSubmit = () => {
         const values = form.getFieldsValue();
         const { file, country, owner, dateTime, description = '' } = values;
-        const files = JSON.stringify(
-            file.map(file => ({
-                name: file.name,
-                base64: file.thumbUrl
-            }))
-        );
+        const files = (file as UploadFile[]).map(file => ({
+            name: file.name,
+            base64: file.thumbUrl
+        }));
+
         const { $y, $M } = dateTime;
-        // console.log({
-        //     dateTime: `${M}-${$y}`,
-        //     owner,
-        //     country,
-        //     files,
-        //     description
-        // });
-        void savePost({
-            dateTime: `${$M}-${$y}`,
-            owner,
-            country,
-            files,
-            description
-        });
+
+        saveData.mutate(
+            {
+                dateTime: `${$M}-${$y}`,
+                owner,
+                country,
+                files,
+                description
+            },
+            {
+                onSuccess: () => {
+                    void message.success('Ваша фоточка успешно загружена!');
+                    onClose();
+                    void queryClient.invalidateQueries(['dbData']);
+                },
+                onError: () => {
+                    void message.error('Всё сломалось, переделывай!');
+                }
+            }
+        );
     };
 
-    const normFile = e => {
+    const normFile = (e: { fileList: UploadFile[] }) => {
         return e?.fileList;
     };
 
@@ -106,13 +111,13 @@ const AddDrawer = () => {
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
-    const [fileList, setFileList] = useState([]);
+    const [fileList, setFileList] = useState([] as UploadFile[]);
 
     const handleCancel = () => setPreviewOpen(false);
 
-    const handlePreview = async file => {
+    const handlePreview = async (file: UploadFile) => {
         if (!file.url && !file.preview) {
-            file.preview = await getBase64(file.originFileObj);
+            file.preview = (await getBase64(file.originFileObj)) as string;
         }
         setPreviewImage(file.url || file.preview);
         setPreviewOpen(true);
@@ -121,8 +126,11 @@ const AddDrawer = () => {
         );
     };
 
-    const handleChange = ({ fileList: newFileList }) =>
-        setFileList(newFileList);
+    const handleChange = ({
+        fileList: newFileList
+    }: {
+        fileList: UploadFile[];
+    }) => setFileList(newFileList);
 
     const uploadButton = (
         <div>
@@ -136,31 +144,14 @@ const AddDrawer = () => {
             </div>
         </div>
     );
-    const onChange = value => {
-        console.log(`selected ${value}`);
+    const onChange = () => {
+        // console.log(`selected ${value}`);
     };
-    const onSearch = value => {
-        console.log('search:', value);
+    const onSearch = () => {
+        // console.log('search:', value);
     };
 
-    // const checkFile = file => {
-    //     console.log(fileList);
-    //     const filesSizeSum = fileList
-    //         ? fileList.reduce((acc, file) => acc + file.size, 0) + file.size
-    //         : file.size;
-    //     return new Promise((resolve, reject) => {
-    //         if (filesSizeSum / MB_SIZE > 1) {
-    //             reject('File must smaller than 10MB!');
-    //             message.error(
-    //                 'Размер файла должен быть меньше 10МБ! Умерьте ваши аппетиты!'
-    //             );
-    //         } else {
-    //             resolve('Success');
-    //         }
-    //     });
-    // };
-
-    const filterOption = (input, option) =>
+    const filterOption = (input: string, option: { label: string }) =>
         (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
     return (
@@ -254,7 +245,7 @@ const AddDrawer = () => {
                                         message: 'Ало, где фотка?'
                                     },
                                     {
-                                        validator(_, fileList) {
+                                        validator(_, fileList: UploadFile[]) {
                                             const filesSizeSum = fileList
                                                 ? fileList.reduce(
                                                       (acc, file) =>
@@ -271,7 +262,7 @@ const AddDrawer = () => {
                                                         reject(
                                                             'Общий размер файлов должен быть меньше 10МБ! Ну-ка удаляем что-то!'
                                                         );
-                                                        message.error(
+                                                        void message.error(
                                                             'Общий размер файлов должен быть меньше 10МБ! Умерьте ваши аппетиты!'
                                                         );
                                                     } else {
