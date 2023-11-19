@@ -6,9 +6,17 @@ const Dotenv = require('dotenv-webpack');
 const path = require("path");
 
 module.exports = () => {
+    // const env = dotenv.config().parsed;
+    //
+    // // reduce it to a nice object, the same as before
+    // const envKeys = Object.keys(env).reduce((prev, next) => {
+    //     prev[`process.env.${next}`] = JSON.stringify(env[next]);
+    //     return prev;
+    // }, {});
     return {
         // Where webpack looks to start building the bundle
         entry: ['./src/index.tsx'],
+
 
         // Where webpack outputs the assets and bundles
         output: {
@@ -22,7 +30,7 @@ module.exports = () => {
             // Removes/cleans build folders and unused assets when rebuilding
             new CleanWebpackPlugin(),
             new Dotenv({
-                path: '.env.development'
+                path: '.env'
             }),
             // Copies files from target to destination folder
             new CopyWebpackPlugin({

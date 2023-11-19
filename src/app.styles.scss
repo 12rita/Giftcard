@@ -1,5 +1,6 @@
 .app-container {
     color: white;
+    height: 100vh;
     //background-color: coral;
     text-align: center;
     //height: 100%;
@@ -17,11 +18,15 @@
     line-height: 30px;
     font-weight: 500;
 }
-.footer {
+.addDrawer{
     margin-left: auto;
+    margin-right: 24px;
 }
 .wrapper {
     background: #03473a;
     display: flex;
     align-items: center;
+}
+.image:hover {
+    cursor: pointer;
 }

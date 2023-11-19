@@ -24,6 +24,9 @@ module.exports = merge(common(), {
         static: {
             directory: paths.public
         },
+        headers: {
+            'Cross-Origin-Embedder-Policy': 'unsafe-none'
+        },
         open: true,
         compress: true,
         hot: true,

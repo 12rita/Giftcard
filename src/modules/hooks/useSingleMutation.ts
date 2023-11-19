@@ -27,7 +27,7 @@ interface IPath<T> {
 export const useSingleMutation = <
     TVariables = unknown,
     TUrlSearchParams = unknown,
-    TResult = boolean
+    TResult = unknown
 >(
     path: string | IPath<TUrlSearchParams>,
     options?: UseMutationOptions<TResult, IError, TVariables>

@@ -15,10 +15,10 @@ class Api {
     ): Promise<ResponseData<TData>> {
         const { responseType, transformResponse } = config;
 
-        if (response.status === 401) {
-            const { data } = await response.json();
-            window.location.href = data.auth_uri || '/';
-        }
+        // if (response.status === 401) {
+        //     const { data } = await response.json();
+        //     window.location.href = '/';
+        // }
         if (response.status === 502) {
             throw {
                 data: {
