@@ -8,6 +8,7 @@ export const useUpload = () => {
     const [previewTitle, setPreviewTitle] = useState('');
     const [fileList, setFileList] = useState([] as UploadFile[]);
     const normFile = (e: { fileList: UploadFile[] }) => {
+        console.log({ e });
         return e?.fileList;
     };
 
@@ -20,6 +21,7 @@ export const useUpload = () => {
         });
 
     const handlePreview = async (file: UploadFile) => {
+        console.log('used');
         if (!file.url && !file.preview) {
             file.preview = (await getBase64(file.originFileObj)) as string;
         }
@@ -34,7 +36,9 @@ export const useUpload = () => {
         fileList: newFileList
     }: {
         fileList: UploadFile[];
-    }) => setFileList(newFileList);
+    }) => {
+        setFileList(newFileList);
+    };
 
     const handleCancel = () => setPreviewOpen(false);
 

@@ -1,7 +1,15 @@
+@font-face {
+    font-family: 'Beer money';
+    src: url('./assets/fonts/beermoney.woff2') format('woff2'), url('./assets/fonts/beermoney.woff') format('woff'), url('./assets/fonts/beermoney.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
 .app-container {
-    color: white;
+
     height: 100vh;
-    //background-color: coral;
+    background: rgb(38,47,70);
+    background: radial-gradient(circle, rgba(38,47,70,1) 0%, rgba(0,6,28,1) 100%);
     text-align: center;
     //height: 100%;
     width: 100%;
@@ -13,12 +21,14 @@
     padding: 24px;
     display: flex;
     justify-content: center;
-    font-family: 'Roboto', sans-serif;
-    font-size: 22px;
-    line-height: 30px;
+    align-items: center;
+    color: white;
+    font-family: 'Beer money', sans-serif;
+    font-size: 64px;
     font-weight: 500;
 }
 .addDrawer{
+    display: flex;
     margin-left: auto;
     margin-right: 24px;
 }
@@ -29,4 +39,22 @@
 }
 .image:hover {
     cursor: pointer;
+}
+.ant-drawer-title {
+    color: white;
+}
+.ant-carousel {
+    .slick-dots {
+        position: static;
+        margin-top: 20px;
+
+        li button {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #a4a4a4;
+        }
+        li.slick-active button {
+            background-color: #131313;
+        }
+    }
 }

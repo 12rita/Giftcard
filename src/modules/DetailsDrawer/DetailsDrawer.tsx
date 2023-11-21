@@ -1,47 +1,41 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
-import countries_ru from '../../static/countries_ru.json';
-import {
-    Button,
-    Col,
-    Drawer,
-    Form,
-    Input,
-    DatePicker,
-    Row,
-    Select,
-    Space,
-    Upload,
-    Modal,
-    message,
-    UploadFile
-} from 'antd';
-
-import { useSingleMutation } from '../hooks/useSingleMutation';
-import { queryClient } from '../../App';
-import { RcFile } from 'antd/es/upload';
+import { Avatar, Carousel, Drawer, List, Skeleton, Space } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
-import { IMessageData } from '../Map/Map';
 import { ROUTES } from '../../static/routes';
-
-const MB_SIZE = 1024 * 1024;
-
-interface IPostData {
-    dateTime: string;
-    owner: string;
+import { Image } from 'antd';
+import { LikeOutlined, MessageOutlined, StarOutlined } from '@ant-design/icons';
+import { useMemo } from 'react';
+import countries_ru from '../../static/countries_ru.json';
+import { backgroundColor } from '../../static/const';
+interface IDetailsData {
+    date: string;
     country: string;
-    files: { name: string; base64: string }[];
     description: string;
+    name: string;
+    email: string;
+    picture: string;
+    files: {
+        name: string;
+        base64: string;
+    }[];
 }
-const getBase64 = (file: RcFile): Promise<string | ArrayBuffer> =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
 
+const data = Array.from({ length: 23 }).map((_, i) => ({
+    href: 'https://ant.design',
+    title: `ant design part ${i}`,
+    avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
+    description:
+        'Ant Design, a design language for background applications, is refined by Ant UED Team.',
+    content:
+        'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.'
+}));
+
+const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
+    <Space>
+        {React.createElement(icon)}
+        {text}
+    </Space>
+);
 const DetailsDrawer = ({
     country,
     onClose
@@ -49,133 +43,143 @@ const DetailsDrawer = ({
     country: string;
     onClose: () => void;
 }) => {
-    const [form] = Form.useForm();
-    const [submittable, setSubmittable] = React.useState(false);
-
-    const { data: serverData } = useDataFromServer<IMessageData>({
+    const { data: details, isLoading } = useDataFromServer<IDetailsData[]>({
         url: ROUTES.DETAILS,
+        params: { country },
         key: 'details-data',
         enabled: !!country
     });
 
-    const saveData = useSingleMutation<IPostData>('/api/map/save');
-
-    const values = Form.useWatch([], form);
-
-    React.useEffect(() => {
-        form.validateFields({ validateOnly: true }).then(
-            () => {
-                setSubmittable(true);
-            },
-            () => {
-                setSubmittable(false);
-            }
-        );
-    }, [form, values, open]);
-
-    const onSubmit = () => {
-        const values = form.getFieldsValue();
-        const { file, country, owner, dateTime, description = '' } = values;
-        const files = (file as UploadFile[]).map(file => ({
-            name: file.name,
-            base64: file.thumbUrl
-        }));
-
-        const { $y, $M } = dateTime;
-
-        saveData.mutate(
-            {
-                dateTime: `${$M}-${$y}`,
-                owner,
-                country,
-                files,
-                description
-            },
-            {
-                onSuccess: () => {
-                    void message.success('Ваша фоточка успешно загружена!');
-                    onClose();
-                    void queryClient.invalidateQueries(['dbData']);
-                },
-                onError: () => {
-                    void message.error('Всё сломалось, переделывай!');
-                }
-            }
-        );
+    // const posts = useMemo(() => {
+    //     if (!details) return [];
+    //     return Object.keys(details?.data).map(date => {
+    //         return details?.data[date][1];
+    //     });
+    // }, []);
+    // const images = details
+    //     ? Object.keys(details?.data).map(key => {
+    //           return details?.data[key][1].files[0].base64;
+    //       }) ?? []
+    //     : [];
+    const onChange = (currentSlide: number) => {
+        console.log(currentSlide);
+    };
+    const contentStyle: React.CSSProperties = {
+        margin: 0,
+        // height: '160px',
+        color: '#fff',
+        lineHeight: '160px',
+        textAlign: 'center',
+        background: '#364d79'
     };
 
-    const normFile = (e: { fileList: UploadFile[] }) => {
-        return e?.fileList;
-    };
-
-    const countryOptions = Object.keys(countries_ru.Names).map(key => ({
-        value: key,
-        label: countries_ru.Names[key]
-    }));
-
-    const [previewOpen, setPreviewOpen] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
-    const [fileList, setFileList] = useState([] as UploadFile[]);
-
-    const handleCancel = () => setPreviewOpen(false);
-
-    const handlePreview = async (file: UploadFile) => {
-        if (!file.url && !file.preview) {
-            file.preview = (await getBase64(file.originFileObj)) as string;
-        }
-        setPreviewImage(file.url || file.preview);
-        setPreviewOpen(true);
-        setPreviewTitle(
-            file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
-        );
-    };
-
-    const handleChange = ({
-        fileList: newFileList
-    }: {
-        fileList: UploadFile[];
-    }) => setFileList(newFileList);
-
-    const uploadButton = (
-        <div>
-            <PlusOutlined />
-            <div
-                style={{
-                    marginTop: 8
-                }}
-            >
-                Upload
-            </div>
-        </div>
-    );
-    const onChange = () => {
-        // console.log(`selected ${value}`);
-    };
-    const onSearch = () => {
-        // console.log('search:', value);
-    };
-
-    const filterOption = (input: string, option: { label: string }) =>
-        (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+    const countryName = countries_ru.Names[country] ?? country;
 
     return (
         <>
-            {/*<Button*/}
-            {/*    type="primary"*/}
-            {/*    onClick={showDrawer}*/}
-            {/*    style={{ background: '#DA6A00' }}*/}
-            {/*>*/}
-            {/*    Внести свой вклад*/}
-            {/*</Button>*/}
             <Drawer
-                title={country}
+                title={countryName}
                 width={720}
                 onClose={onClose}
                 open={!!country}
-                // drawerStyle={{ backgroundColor: '#9f9f9f' }}
+                drawerStyle={{ background: 'rgba(31,31,31,0.8)' }}
                 bodyStyle={{ paddingBottom: 80 }}
-            ></Drawer>
+                // headerStyle={{ color: 'white' }}
+            >
+                {isLoading ? (
+                    <Skeleton />
+                ) : (
+                    <List
+                        itemLayout="vertical"
+                        size="large"
+                        pagination={{
+                            onChange: page => {
+                                console.log(page);
+                            },
+                            pageSize: 3
+                        }}
+                        dataSource={details?.data ?? []}
+                        footer={
+                            <div>
+                                <b>ant design</b> footer part
+                            </div>
+                        }
+                        renderItem={(item: IDetailsData) => (
+                            <List.Item
+                                key={item.date + item.name}
+                                actions={[
+                                    <IconText
+                                        icon={StarOutlined}
+                                        text="156"
+                                        key="list-vertical-star-o"
+                                    />,
+                                    <IconText
+                                        icon={LikeOutlined}
+                                        text="156"
+                                        key="list-vertical-like-o"
+                                    />,
+                                    <IconText
+                                        icon={MessageOutlined}
+                                        text="2"
+                                        key="list-vertical-message"
+                                    />
+                                ]}
+                                // extra={
+                                //     <img
+                                //         width={272}
+                                //         alt="logo"
+                                //         src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+                                //     />
+                                // }
+                            >
+                                <List.Item.Meta
+                                    style={{ color: 'white' }}
+                                    avatar={<Avatar src={item.picture} />}
+                                    title={<div>{item.name}</div>}
+                                    description={item.description}
+                                />
+
+                                <Carousel infinite={false}>
+                                    {item.files.map((image, idx) => {
+                                        return (
+                                            <div key={idx}>
+                                                <div
+                                                    id={'#wrapper'}
+                                                    style={{
+                                                        margin: 0,
+                                                        height: '400px',
+                                                        color: '#fff',
+                                                        lineHeight: '160px',
+                                                        textAlign: 'center'
+                                                        // background: '#364d79'
+                                                    }}
+                                                >
+                                                    <Image
+                                                        height={400}
+                                                        src={image.base64}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {/*<div>*/}
+                                    {/*    <h3 style={contentStyle}>1</h3>*/}
+                                    {/*</div>*/}
+                                    {/*<div>*/}
+                                    {/*    <h3 style={contentStyle}>2</h3>*/}
+                                    {/*</div>*/}
+                                    {/*<div>*/}
+                                    {/*    <h3 style={contentStyle}>3</h3>*/}
+                                    {/*</div>*/}
+                                    {/*<div>*/}
+                                    {/*    <h3 style={contentStyle}>4</h3>*/}
+                                    {/*</div>*/}
+                                </Carousel>
+                            </List.Item>
+                        )}
+                    />
+                )}
+            </Drawer>
         </>
     );
 };

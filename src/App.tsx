@@ -7,6 +7,7 @@ import DetailsDrawer from './modules/DetailsDrawer/DetailsDrawer';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './modules/AuthContext';
 import { Header } from './modules/Header/Header';
+import { ConfigProvider, theme } from 'antd';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -30,16 +31,18 @@ const App = () => {
         <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
             <QueryClientProvider client={queryClient}>
                 <AuthProvider>
-                    <div className={'wrapper'}>
-                        <div className="app-container">
-                            <Header />
-                            <Map onClick={onClick} />
-                            <DetailsDrawer
-                                country={activeCountry}
-                                onClose={onClose}
-                            />
+                    <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+                        <div className={'wrapper'}>
+                            <div className="app-container">
+                                <Header />
+                                <Map onClick={onClick} />
+                                <DetailsDrawer
+                                    country={activeCountry}
+                                    onClose={onClose}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    </ConfigProvider>
                 </AuthProvider>
             </QueryClientProvider>
         </GoogleOAuthProvider>

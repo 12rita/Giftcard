@@ -44,17 +44,7 @@ export interface ResponseSchema<TData> {
     data: TData;
 }
 export interface IError {
-    status: number;
-    statusText: string;
-    data: {
-        message?: string;
-        messages?: string[];
-        code?: number;
-    };
-}
-
-export interface IGraphQLError extends Partial<IError> {
-    errors?: { message?: string }[];
+    message?: string;
 }
 
 export interface BaseData {

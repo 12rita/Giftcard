@@ -17,6 +17,7 @@ import { AddForm } from './AddForm';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '../AuthContext';
 import { Login } from '../Login/Login';
+import { backgroundColor, buttonColor } from '../../static/const';
 
 interface IPostData {
     dateTime: string;
@@ -76,7 +77,7 @@ const AddDrawer = () => {
                 onSuccess: () => {
                     void message.success('Ваша фоточка успешно загружена!');
                     onClose();
-                    void queryClient.invalidateQueries(['dbData']);
+                    void queryClient.invalidateQueries(['map-data']);
                 },
                 onError: () => {
                     void message.error('Всё сломалось, переделывай!');
@@ -91,16 +92,17 @@ const AddDrawer = () => {
                 type="primary"
                 onClick={showDrawer}
                 icon={<PlusOutlined />}
-                style={{ background: '#DA6A00' }}
+                style={{ background: buttonColor }}
             >
                 Внести свой вклад
             </Button>
             <Drawer
-                title="Добавить свою фоточку"
+                title="Добавить свои фот очки"
                 width={720}
                 onClose={onClose}
                 open={open}
                 bodyStyle={{ paddingBottom: 80 }}
+                drawerStyle={{ background: 'rgba(31,31,31,0.6)' }}
                 extra={
                     isAuthenticated && user.isWhitelisted ? (
                         <Space>
@@ -110,7 +112,7 @@ const AddDrawer = () => {
                                 disabled={!submittable}
                                 loading={saveData.isLoading}
                                 type="primary"
-                                style={{ background: '#DA6A00' }}
+                                style={{ background: buttonColor }}
                             >
                                 Загрузить
                             </Button>

@@ -55,7 +55,11 @@ export const Profile: React.FC = () => {
 
     return (
         <Dropdown menu={{ items, onClick }} trigger={['click']}>
-            <a onClick={e => e.preventDefault()} className={'image'}>
+            <a
+                style={{ display: 'flex' }}
+                onClick={e => e.preventDefault()}
+                className={'image'}
+            >
                 <Avatar
                     size="large"
                     {...avatarProps}

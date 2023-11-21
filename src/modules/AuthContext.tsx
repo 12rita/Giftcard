@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children?: ReactNode }) => {
                         }
                     },
                     onError: error => {
-                        void message.error(error?.data?.message);
+                        void message.error(error?.message);
                     },
                     onSettled: () => {
                         setIsLoggingIn(false);

@@ -1,4 +1,4 @@
 import { api, Api } from './api';
-import { ResponseData, IError, IGraphQLError } from './types';
+import { ResponseData, IError } from './types';
 
-export { api, Api, ResponseData, IError, IGraphQLError };
+export { api, Api, ResponseData, IError };

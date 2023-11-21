@@ -144,6 +144,7 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                             <Upload
                                 beforeUpload={() => false}
                                 listType="picture-card"
+                                multiple={true}
                                 fileList={fileList}
                                 onPreview={handlePreview}
                                 onChange={handleChange}

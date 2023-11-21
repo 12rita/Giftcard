@@ -8,6 +8,7 @@ import am5themes_Dark from '@amcharts/amcharts5/themes/Dark';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { Circle } from '@amcharts/amcharts5';
 import { ROUTES } from '../../static/routes';
+import { circleColor, mapColor, outerCircleColor } from '../../static/const';
 
 interface ICity {
     id: string;
@@ -41,18 +42,31 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
 
         const chart = root.container.children.push(
             am5map.MapChart.new(root, {
-                projection: am5map.geoMercator(),
+                projection: am5map.geoEquirectangular(),
                 panX: 'rotateX'
             })
         );
+        const gradient = am5.LinearGradient.new(root, {
+            stops: [
+                {
+                    color: am5.color('#312976')
+                },
+                {
+                    color: am5.color('#826AB4')
+                }
+            ]
+        });
 
-        chart.series.push(
+        const polygons = chart.series.push(
             am5map.MapPolygonSeries.new(root, {
                 geoJSON: am5geodata_worldLow,
-                fill: am5.color('#9a4e03'),
+                fill: am5.color(mapColor),
+                opacity: 0.9,
                 exclude: ['AQ']
             })
         );
+        // polygons.mapPolygons.template.setAll({ fill: gradient });
+        // polygons. = gradient;
 
         // const pointSeries = chart.series.push(
         //     am5map.MapPointSeries.new(root, {
@@ -80,7 +94,7 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
                     {
                         radius: 10,
                         fillOpacity: 0.7,
-                        fill: am5.color('#DA6A00')
+                        fill: am5.color(circleColor)
                     },
 
                     circleTemplate
@@ -93,7 +107,7 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
                     {
                         radius: 10,
                         fillOpacity: 0.7,
-                        fill: am5.color('#9d03a8'),
+                        fill: am5.color(outerCircleColor),
                         cursorOverStyle: 'pointer',
                         tooltipText: `{name}: [bold]{value}[/]`
                     },
