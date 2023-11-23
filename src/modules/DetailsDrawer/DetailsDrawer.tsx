@@ -1,12 +1,21 @@
 import * as React from 'react';
-import { Avatar, Carousel, Drawer, List, Skeleton, Space } from 'antd';
+import { useCallback, useLayoutEffect, useState } from 'react';
+import { Avatar, Drawer, List, message, Skeleton, Space } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { ROUTES } from '../../static/routes';
-import { Image } from 'antd';
-import { LikeOutlined, MessageOutlined, StarOutlined } from '@ant-design/icons';
-import { useMemo } from 'react';
+import {
+    DeleteFilled,
+    DislikeFilled,
+    DislikeOutlined,
+    LikeFilled,
+    LikeOutlined
+} from '@ant-design/icons';
 import countries_ru from '../../static/countries_ru.json';
 import { backgroundColor } from '../../static/const';
+import { ImageCarousel } from './ImageCarousel';
+import { useSingleMutation } from '../hooks/useSingleMutation';
+import { queryClient } from '../../App';
+
 interface IDetailsData {
     date: string;
     country: string;
@@ -14,28 +23,39 @@ interface IDetailsData {
     name: string;
     email: string;
     picture: string;
+    likes: number;
+    dislikes: number;
+    isLiked: boolean;
+    isDisliked: boolean;
+    isDeletable: boolean;
+    id: number;
     files: {
         name: string;
         base64: string;
     }[];
 }
-
-const data = Array.from({ length: 23 }).map((_, i) => ({
-    href: 'https://ant.design',
-    title: `ant design part ${i}`,
-    avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
-    description:
-        'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-    content:
-        'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.'
-}));
-
+interface ISaveReaction {
+    messageId: number;
+    reaction: number;
+}
+interface IDeletePost {
+    messageId: number;
+}
+type Reaction = 'like' | 'dislike';
 const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
     <Space>
         {React.createElement(icon)}
         {text}
     </Space>
 );
+
+interface IReactionPost {
+    [key: number]: {
+        likesCount: number;
+        dislikesCount: number;
+        reaction: number;
+    };
+}
 const DetailsDrawer = ({
     country,
     onClose
@@ -49,31 +69,191 @@ const DetailsDrawer = ({
         key: 'details-data',
         enabled: !!country
     });
-
-    // const posts = useMemo(() => {
-    //     if (!details) return [];
-    //     return Object.keys(details?.data).map(date => {
-    //         return details?.data[date][1];
-    //     });
-    // }, []);
-    // const images = details
-    //     ? Object.keys(details?.data).map(key => {
-    //           return details?.data[key][1].files[0].base64;
-    //       }) ?? []
-    //     : [];
-    const onChange = (currentSlide: number) => {
-        console.log(currentSlide);
-    };
-    const contentStyle: React.CSSProperties = {
-        margin: 0,
-        // height: '160px',
-        color: '#fff',
-        lineHeight: '160px',
-        textAlign: 'center',
-        background: '#364d79'
-    };
-
+    const saveReaction = useSingleMutation<ISaveReaction>(ROUTES.REACTION);
+    const deletePost = useSingleMutation<IDeletePost>(ROUTES.MESSAGE_DELETE);
+    const [reaction, setLocalReaction] = useState({} as IReactionPost);
+    const [loading, setLoading] = useState(false);
     const countryName = countries_ru.Names[country] ?? country;
+
+    useLayoutEffect(() => {
+        if (!details || !details.data) return;
+        details.data.forEach(item => {
+            setLocalReaction(prev => ({
+                ...prev,
+                [item.id]: {
+                    likesCount: item.likes,
+                    dislikesCount: item.dislikes,
+                    reaction: item.isLiked ? 1 : item.isDisliked ? -1 : 0
+                }
+            }));
+        });
+    }, [details, setLocalReaction]);
+
+    const deleteMessage = (item: IDetailsData) => {
+        if (item.isDeletable) {
+            deletePost.mutate(
+                { messageId: item.id },
+                {
+                    onSuccess: () => {
+                        void queryClient.invalidateQueries(['details-data']);
+                        void queryClient.invalidateQueries(['map-data']);
+                        void message.success(
+                            'Вы удалили ваши фотки, но интернет всё помнит...'
+                        );
+                    },
+                    onError: err => void message.error(err.message)
+                }
+            );
+        }
+    };
+    const setReaction = useCallback(
+        (item: IDetailsData, reaction: Reaction) => {
+            if (loading) return;
+            setLoading(true);
+            if (item.isLiked) {
+                if (reaction === 'like') {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount - 1,
+                            dislikesCount: prev[item.id].dislikesCount,
+                            reaction: 0
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: 0 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                } else {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount - 1,
+                            dislikesCount: prev[item.id].dislikesCount + 1,
+                            reaction: -1
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: -1 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                }
+            } else if (item.isDisliked) {
+                if (reaction === 'like') {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount + 1,
+                            dislikesCount: prev[item.id].dislikesCount - 1,
+                            reaction: 1
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: 1 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                } else {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount,
+                            dislikesCount: prev[item.id].dislikesCount - 1,
+                            reaction: 0
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: 0 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                }
+            } else {
+                if (reaction === 'like') {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount + 1,
+                            dislikesCount: prev[item.id].dislikesCount,
+                            reaction: 1
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: 1 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                } else {
+                    setLocalReaction(prev => ({
+                        ...prev,
+                        [item.id]: {
+                            likesCount: prev[item.id].likesCount,
+                            dislikesCount: prev[item.id].dislikesCount + 1,
+                            reaction: -1
+                        }
+                    }));
+
+                    saveReaction.mutate(
+                        { messageId: item.id, reaction: -1 },
+                        {
+                            onSuccess: () =>
+                                void queryClient.invalidateQueries([
+                                    'details-data'
+                                ]),
+                            onError: err => void message.error(err.message),
+                            onSettled: () => setLoading(false)
+                        }
+                    );
+                }
+            }
+        },
+        [loading, saveReaction]
+    );
+
+    const getDate = useCallback((date: string) => {
+        const [month, year] = date.split('-');
+        return new Date(+year, +month).toLocaleDateString('ru', {
+            year: 'numeric',
+            month: 'long'
+        });
+    }, []);
 
     return (
         <>
@@ -82,7 +262,7 @@ const DetailsDrawer = ({
                 width={720}
                 onClose={onClose}
                 open={!!country}
-                drawerStyle={{ background: 'rgba(31,31,31,0.8)' }}
+                drawerStyle={{ background: backgroundColor }}
                 bodyStyle={{ paddingBottom: 80 }}
                 // headerStyle={{ color: 'white' }}
             >
@@ -92,89 +272,94 @@ const DetailsDrawer = ({
                     <List
                         itemLayout="vertical"
                         size="large"
-                        pagination={{
-                            onChange: page => {
-                                console.log(page);
-                            },
-                            pageSize: 3
-                        }}
-                        dataSource={details?.data ?? []}
-                        footer={
-                            <div>
-                                <b>ant design</b> footer part
-                            </div>
+                        pagination={
+                            details?.data?.length > 3
+                                ? {
+                                      pageSize: 3
+                                  }
+                                : null
                         }
+                        dataSource={details?.data ?? []}
                         renderItem={(item: IDetailsData) => (
                             <List.Item
                                 key={item.date + item.name}
                                 actions={[
-                                    <IconText
-                                        icon={StarOutlined}
-                                        text="156"
-                                        key="list-vertical-star-o"
-                                    />,
-                                    <IconText
-                                        icon={LikeOutlined}
-                                        text="156"
+                                    <div
                                         key="list-vertical-like-o"
-                                    />,
-                                    <IconText
-                                        icon={MessageOutlined}
-                                        text="2"
-                                        key="list-vertical-message"
-                                    />
+                                        onClick={() => {
+                                            setReaction(item, 'like');
+                                        }}
+                                    >
+                                        <IconText
+                                            icon={
+                                                reaction[item.id]?.reaction ===
+                                                1
+                                                    ? LikeFilled
+                                                    : LikeOutlined
+                                            }
+                                            text={`${
+                                                reaction[item.id]?.likesCount ||
+                                                0
+                                            }`}
+                                        />
+                                    </div>,
+                                    <div
+                                        key="list-vertical-dislike-o"
+                                        onClick={() => {
+                                            setReaction(item, 'dislike');
+                                        }}
+                                    >
+                                        <IconText
+                                            icon={
+                                                reaction[item.id]?.reaction ===
+                                                -1
+                                                    ? DislikeFilled
+                                                    : DislikeOutlined
+                                            }
+                                            text={`${
+                                                reaction[item.id]
+                                                    ?.dislikesCount || 0
+                                            }`}
+                                        />
+                                    </div>,
+                                    item.isDeletable && (
+                                        <div
+                                            key="list-vertical-delete-o"
+                                            onClick={() => {
+                                                deleteMessage(item);
+                                            }}
+                                        >
+                                            <DeleteFilled />
+                                        </div>
+                                    )
                                 ]}
-                                // extra={
-                                //     <img
-                                //         width={272}
-                                //         alt="logo"
-                                //         src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
-                                //     />
-                                // }
                             >
                                 <List.Item.Meta
                                     style={{ color: 'white' }}
                                     avatar={<Avatar src={item.picture} />}
-                                    title={<div>{item.name}</div>}
+                                    title={
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                gap: '16px',
+                                                alignItems: 'baseline'
+                                            }}
+                                        >
+                                            <div> {item.name}</div>
+                                            <div
+                                                style={{
+                                                    color: 'rgba(255, 255, 255, 0.45)',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                {getDate(item.date)}
+                                            </div>
+                                        </div>
+                                    }
                                     description={item.description}
                                 />
 
-                                <Carousel infinite={false}>
-                                    {item.files.map((image, idx) => {
-                                        return (
-                                            <div key={idx}>
-                                                <div
-                                                    id={'#wrapper'}
-                                                    style={{
-                                                        margin: 0,
-                                                        height: '400px',
-                                                        color: '#fff',
-                                                        lineHeight: '160px',
-                                                        textAlign: 'center'
-                                                        // background: '#364d79'
-                                                    }}
-                                                >
-                                                    <Image
-                                                        height={400}
-                                                        src={image.base64}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {/*<div>*/}
-                                    {/*    <h3 style={contentStyle}>1</h3>*/}
-                                    {/*</div>*/}
-                                    {/*<div>*/}
-                                    {/*    <h3 style={contentStyle}>2</h3>*/}
-                                    {/*</div>*/}
-                                    {/*<div>*/}
-                                    {/*    <h3 style={contentStyle}>3</h3>*/}
-                                    {/*</div>*/}
-                                    {/*<div>*/}
-                                    {/*    <h3 style={contentStyle}>4</h3>*/}
-                                    {/*</div>*/}
-                                </Carousel>
+                                <ImageCarousel files={item.files} />
                             </List.Item>
                         )}
                     />

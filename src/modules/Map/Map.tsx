@@ -9,6 +9,7 @@ import { useDataFromServer } from '../hooks/useDataFromServer';
 import { Circle } from '@amcharts/amcharts5';
 import { ROUTES } from '../../static/routes';
 import { circleColor, mapColor, outerCircleColor } from '../../static/const';
+import countries_ru from '../../static/countries_ru.json';
 
 interface ICity {
     id: string;
@@ -16,20 +17,21 @@ interface ICity {
     value: number;
 }
 export interface IMessageData {
-    [key: string]: string;
+    total: number;
+    country: string;
 }
 export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
-    const { data: serverData } = useDataFromServer<IMessageData>({
+    const { data: serverData } = useDataFromServer<IMessageData[]>({
         url: ROUTES.GEOGRAPHY,
         key: 'map-data'
     });
 
     const cities: ICity[] = useMemo(() => {
         if (!serverData) return [];
-        return Object.keys(serverData.data)?.map(key => ({
-            id: key,
-            name: key,
-            value: +serverData.data[key]
+        return serverData.data?.map(item => ({
+            id: item.country,
+            name: countries_ru.Names[item.country] ?? item.country,
+            value: +item.total
         }));
     }, [serverData]);
 
@@ -46,18 +48,18 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
                 panX: 'rotateX'
             })
         );
-        const gradient = am5.LinearGradient.new(root, {
-            stops: [
-                {
-                    color: am5.color('#312976')
-                },
-                {
-                    color: am5.color('#826AB4')
-                }
-            ]
-        });
+        // const gradient = am5.LinearGradient.new(root, {
+        //     stops: [
+        //         {
+        //             color: am5.color('#312976')
+        //         },
+        //         {
+        //             color: am5.color('#826AB4')
+        //         }
+        //     ]
+        // });
 
-        const polygons = chart.series.push(
+        chart.series.push(
             am5map.MapPolygonSeries.new(root, {
                 geoJSON: am5geodata_worldLow,
                 fill: am5.color(mapColor),
@@ -88,7 +90,7 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
         bubbleSeries.bullets.push(function (root) {
             const container = am5.Container.new(root, {});
 
-            const circle = container.children.push(
+            container.children.push(
                 am5.Circle.new(
                     root,
                     {
@@ -117,7 +119,7 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
             );
 
             circle2.events.on('click', ev => {
-                onClick((ev?.target?.dataItem?.dataContext as ICity)?.name);
+                onClick((ev?.target?.dataItem?.dataContext as ICity)?.id);
             });
 
             // const countryLabel = container.children.push(

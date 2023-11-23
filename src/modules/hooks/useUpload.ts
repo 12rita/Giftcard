@@ -8,22 +8,20 @@ export const useUpload = () => {
     const [previewTitle, setPreviewTitle] = useState('');
     const [fileList, setFileList] = useState([] as UploadFile[]);
     const normFile = (e: { fileList: UploadFile[] }) => {
-        console.log({ e });
         return e?.fileList;
     };
 
-    const getBase64 = (file: RcFile): Promise<string | ArrayBuffer> =>
+    const getBase64 = (file: RcFile): Promise<string> =>
         new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
+            reader.onload = () => resolve(reader.result as string);
             reader.onerror = error => reject(error);
         });
 
     const handlePreview = async (file: UploadFile) => {
-        console.log('used');
         if (!file.url && !file.preview) {
-            file.preview = (await getBase64(file.originFileObj)) as string;
+            file.preview = await getBase64(file.originFileObj);
         }
         setPreviewImage(file.url || file.preview);
         setPreviewOpen(true);
@@ -50,6 +48,7 @@ export const useUpload = () => {
         fileList,
         handlePreview,
         handleChange,
-        handleCancel
+        handleCancel,
+        getBase64
     };
 };

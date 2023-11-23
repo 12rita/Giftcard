@@ -17,7 +17,7 @@ import { AddForm } from './AddForm';
 import { PlusOutlined } from '@ant-design/icons';
 import { useAuth } from '../AuthContext';
 import { Login } from '../Login/Login';
-import { backgroundColor, buttonColor } from '../../static/const';
+import { backgroundColor } from '../../static/const';
 
 interface IPostData {
     dateTime: string;
@@ -92,7 +92,7 @@ const AddDrawer = () => {
                 type="primary"
                 onClick={showDrawer}
                 icon={<PlusOutlined />}
-                style={{ background: buttonColor }}
+                // style={{ background: buttonColor }}
             >
                 Внести свой вклад
             </Button>
@@ -102,7 +102,7 @@ const AddDrawer = () => {
                 onClose={onClose}
                 open={open}
                 bodyStyle={{ paddingBottom: 80 }}
-                drawerStyle={{ background: 'rgba(31,31,31,0.6)' }}
+                drawerStyle={{ background: backgroundColor }}
                 extra={
                     isAuthenticated && user.isWhitelisted ? (
                         <Space>
@@ -112,7 +112,7 @@ const AddDrawer = () => {
                                 disabled={!submittable}
                                 loading={saveData.isLoading}
                                 type="primary"
-                                style={{ background: buttonColor }}
+                                // style={{ background: buttonColor }}
                             >
                                 Загрузить
                             </Button>

@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './modules/AuthContext';
 import { Header } from './modules/Header/Header';
 import { ConfigProvider, theme } from 'antd';
+import { backgroundColor } from './static/const';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -31,9 +32,20 @@ const App = () => {
         <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
             <QueryClientProvider client={queryClient}>
                 <AuthProvider>
-                    <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+                    <ConfigProvider
+                        theme={{
+                            token: {
+                                colorPrimary: '#ff642d'
+                                // colorPrimaryBg: 'rgba(38,47,70,0.9)'
+                            },
+                            algorithm: theme.darkAlgorithm
+                        }}
+                    >
                         <div className={'wrapper'}>
-                            <div className="app-container">
+                            <div
+                                className="app-container"
+                                style={{ background: backgroundColor }}
+                            >
                                 <Header />
                                 <Map onClick={onClick} />
                                 <DetailsDrawer

@@ -34,7 +34,8 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
         previewTitle,
         previewImage,
         previewOpen,
-        handleCancel
+        handleCancel,
+        getBase64
     } = useUpload();
 
     const uploadButton = (
@@ -146,7 +147,10 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                                 listType="picture-card"
                                 multiple={true}
                                 fileList={fileList}
-                                onPreview={handlePreview}
+                                previewFile={getBase64}
+                                onPreview={file => {
+                                    void handlePreview(file);
+                                }}
                                 onChange={handleChange}
                             >
                                 {fileList.length >= 3 ? null : uploadButton}
