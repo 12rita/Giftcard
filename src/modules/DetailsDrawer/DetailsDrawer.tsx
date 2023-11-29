@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useCallback, useLayoutEffect, useState } from 'react';
-import { Avatar, Drawer, List, message, Skeleton, Space } from 'antd';
+import { useCallback, useLayoutEffect } from 'react';
+import { Avatar, Drawer, List, Skeleton, Space } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { ROUTES } from '../../static/routes';
 import {
@@ -13,10 +13,9 @@ import {
 import countries_ru from '../../static/countries_ru.json';
 import { backgroundColor } from '../../static/const';
 import { ImageCarousel } from './ImageCarousel';
-import { useSingleMutation } from '../hooks/useSingleMutation';
-import { queryClient } from '../../App';
+import { useHandleReaction } from '../hooks/useHandleReaction';
 
-interface IDetailsData {
+export interface IDetailsData {
     date: string;
     country: string;
     description: string;
@@ -34,14 +33,7 @@ interface IDetailsData {
         base64: string;
     }[];
 }
-interface ISaveReaction {
-    messageId: number;
-    reaction: number;
-}
-interface IDeletePost {
-    messageId: number;
-}
-type Reaction = 'like' | 'dislike';
+
 const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
     <Space>
         {React.createElement(icon)}
@@ -49,13 +41,6 @@ const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
     </Space>
 );
 
-interface IReactionPost {
-    [key: number]: {
-        likesCount: number;
-        dislikesCount: number;
-        reaction: number;
-    };
-}
 const DetailsDrawer = ({
     country,
     onClose
@@ -69,11 +54,9 @@ const DetailsDrawer = ({
         key: 'details-data',
         enabled: !!country
     });
-    const saveReaction = useSingleMutation<ISaveReaction>(ROUTES.REACTION);
-    const deletePost = useSingleMutation<IDeletePost>(ROUTES.MESSAGE_DELETE);
-    const [reaction, setLocalReaction] = useState({} as IReactionPost);
-    const [loading, setLoading] = useState(false);
     const countryName = countries_ru.Names[country] ?? country;
+    const { reaction, setLocalReaction, setReaction, deleteMessage } =
+        useHandleReaction();
 
     useLayoutEffect(() => {
         if (!details || !details.data) return;
@@ -88,164 +71,6 @@ const DetailsDrawer = ({
             }));
         });
     }, [details, setLocalReaction]);
-
-    const deleteMessage = (item: IDetailsData) => {
-        if (item.isDeletable) {
-            deletePost.mutate(
-                { messageId: item.id },
-                {
-                    onSuccess: () => {
-                        void queryClient.invalidateQueries(['details-data']);
-                        void queryClient.invalidateQueries(['map-data']);
-                        void message.success(
-                            'Вы удалили ваши фотки, но интернет всё помнит...'
-                        );
-                    },
-                    onError: err => void message.error(err.message)
-                }
-            );
-        }
-    };
-    const setReaction = useCallback(
-        (item: IDetailsData, reaction: Reaction) => {
-            if (loading) return;
-            setLoading(true);
-            if (item.isLiked) {
-                if (reaction === 'like') {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount - 1,
-                            dislikesCount: prev[item.id].dislikesCount,
-                            reaction: 0
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 0 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                } else {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount - 1,
-                            dislikesCount: prev[item.id].dislikesCount + 1,
-                            reaction: -1
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: -1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                }
-            } else if (item.isDisliked) {
-                if (reaction === 'like') {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount + 1,
-                            dislikesCount: prev[item.id].dislikesCount - 1,
-                            reaction: 1
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                } else {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount,
-                            dislikesCount: prev[item.id].dislikesCount - 1,
-                            reaction: 0
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 0 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                }
-            } else {
-                if (reaction === 'like') {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount + 1,
-                            dislikesCount: prev[item.id].dislikesCount,
-                            reaction: 1
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                } else {
-                    setLocalReaction(prev => ({
-                        ...prev,
-                        [item.id]: {
-                            likesCount: prev[item.id].likesCount,
-                            dislikesCount: prev[item.id].dislikesCount + 1,
-                            reaction: -1
-                        }
-                    }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: -1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
-                }
-            }
-        },
-        [loading, saveReaction]
-    );
 
     const getDate = useCallback((date: string) => {
         const [month, year] = date.split('-');
@@ -267,7 +92,7 @@ const DetailsDrawer = ({
                 // headerStyle={{ color: 'white' }}
             >
                 {isLoading ? (
-                    <Skeleton />
+                    <ListLoader />
                 ) : (
                     <List
                         itemLayout="vertical"
@@ -369,4 +194,39 @@ const DetailsDrawer = ({
     );
 };
 
+const ListLoader = () => {
+    return (
+        <List
+            itemLayout="vertical"
+            size="large"
+            dataSource={[]}
+            renderItem={(item: IDetailsData) => (
+                <List.Item
+                    key={item.date + item.name}
+                    actions={[
+                        <IconText
+                            key="list-vertical-like-o"
+                            icon={LikeOutlined}
+                            text={`${0}`}
+                        />,
+
+                        <IconText
+                            key="list-vertical-dislike-o"
+                            icon={DislikeOutlined}
+                            text={`${0}`}
+                        />
+                    ]}
+                >
+                    <List.Item.Meta
+                        style={{ color: 'white' }}
+                        avatar={<Skeleton.Avatar />}
+                        title={<Skeleton.Input />}
+                        description={item.description}
+                    />
+                    <Skeleton.Image />
+                </List.Item>
+            )}
+        />
+    );
+};
 export default DetailsDrawer;
