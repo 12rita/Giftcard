@@ -10,7 +10,7 @@ module.exports = merge(common(), {
     devtool: false,
     output: {
         path: paths.build,
-        publicPath: 'https://12rita.github.io/Giftcard',
+        publicPath: paths.build,
         filename: '[name].bundle.js'
     },
     plugins: [
