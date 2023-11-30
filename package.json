@@ -2,7 +2,6 @@
     "name": "giftcard",
     "version": "1.0.0",
     "description": "",
-    "homepage": "https://12rita.github.io/Giftcard",
     "main": "index.tsx",
     "proxy": "http://localhost:3000",
     "scripts": {
