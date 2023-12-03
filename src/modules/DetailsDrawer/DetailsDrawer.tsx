@@ -48,7 +48,7 @@ const DetailsDrawer = ({
     country: string;
     onClose: () => void;
 }) => {
-    const { data: details, isLoading } = useDataFromServer<IDetailsData[]>({
+    const { data: details, isFetching } = useDataFromServer<IDetailsData[]>({
         url: ROUTES.DETAILS,
         params: { country },
         key: 'details-data',
@@ -57,9 +57,12 @@ const DetailsDrawer = ({
     const countryName = countries_ru.Names[country] ?? country;
     const { reaction, setLocalReaction, setReaction, deleteMessage } =
         useHandleReaction();
+    const [countryDetails, setCountryDetails] = React.useState<IDetailsData[]>(
+        []
+    );
 
     useLayoutEffect(() => {
-        if (!details || !details.data) return;
+        if (!details || !details.data || isFetching) return;
         details.data.forEach(item => {
             setLocalReaction(prev => ({
                 ...prev,
@@ -70,7 +73,8 @@ const DetailsDrawer = ({
                 }
             }));
         });
-    }, [details, setLocalReaction]);
+        setCountryDetails(details.data);
+    }, [details, isFetching, setLocalReaction]);
 
     const getDate = useCallback((date: string) => {
         const [month, year] = date.split('-');
@@ -80,18 +84,23 @@ const DetailsDrawer = ({
         });
     }, []);
 
+    const handleCLose = useCallback(() => {
+        setCountryDetails([]);
+        onClose();
+    }, [onClose]);
+
     return (
         <>
             <Drawer
                 title={countryName}
                 width={720}
-                onClose={onClose}
+                onClose={handleCLose}
                 open={!!country}
                 drawerStyle={{ background: backgroundColor }}
                 bodyStyle={{ paddingBottom: 80 }}
                 // headerStyle={{ color: 'white' }}
             >
-                {isLoading ? (
+                {isFetching ? (
                     <ListLoader />
                 ) : (
                     <List
@@ -104,7 +113,7 @@ const DetailsDrawer = ({
                                   }
                                 : null
                         }
-                        dataSource={details?.data ?? []}
+                        dataSource={countryDetails}
                         renderItem={(item: IDetailsData) => (
                             <List.Item
                                 key={item.date + item.name}
@@ -199,31 +208,19 @@ const ListLoader = () => {
         <List
             itemLayout="vertical"
             size="large"
-            dataSource={[]}
-            renderItem={(item: IDetailsData) => (
-                <List.Item
-                    key={item.date + item.name}
-                    actions={[
-                        <IconText
-                            key="list-vertical-like-o"
-                            icon={LikeOutlined}
-                            text={`${0}`}
-                        />,
-
-                        <IconText
-                            key="list-vertical-dislike-o"
-                            icon={DislikeOutlined}
-                            text={`${0}`}
-                        />
-                    ]}
-                >
+            dataSource={[{ date: '', name: '', description: '' }]}
+            renderItem={item => (
+                <List.Item key={'loader-item'}>
                     <List.Item.Meta
                         style={{ color: 'white' }}
-                        avatar={<Skeleton.Avatar />}
-                        title={<Skeleton.Input />}
+                        avatar={<Skeleton.Avatar active />}
+                        title={<Skeleton.Input active />}
                         description={item.description}
                     />
-                    <Skeleton.Image />
+                    <Skeleton.Image
+                        active
+                        style={{ width: '600px', height: '300px' }}
+                    />
                 </List.Item>
             )}
         />

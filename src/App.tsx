@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { useState } from 'react';
 import './app.styles.scss';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Map } from './modules/Map/Map';
-import DetailsDrawer from './modules/DetailsDrawer/DetailsDrawer';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './modules/AuthContext';
 import { Header } from './modules/Header/Header';
@@ -19,15 +17,6 @@ export const queryClient = new QueryClient({
 });
 
 const App = () => {
-    const [activeCountry, setActiveCountry] = useState(null);
-    const onClick = (country: string) => {
-        setActiveCountry(country);
-    };
-
-    const onClose = () => {
-        setActiveCountry(null);
-    };
-
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
             <QueryClientProvider client={queryClient}>
@@ -47,11 +36,7 @@ const App = () => {
                                 style={{ background: backgroundColor }}
                             >
                                 <Header />
-                                <Map onClick={onClick} />
-                                <DetailsDrawer
-                                    country={activeCountry}
-                                    onClose={onClose}
-                                />
+                                <Map />
                             </div>
                         </div>
                     </ConfigProvider>

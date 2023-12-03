@@ -91,7 +91,13 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                     {/*    </Form.Item>*/}
                     {/*</Col>*/}
                     <Col span={12}>
-                        <Form.Item name="dateTime" label="Когда">
+                        <Form.Item
+                            name="dateTime"
+                            label="Когда"
+                            rules={[
+                                { required: true, message: 'Надо за этот год' }
+                            ]}
+                        >
                             <DatePicker
                                 onChange={() => {}}
                                 picker="month"
@@ -125,7 +131,7 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                                             (resolve, reject) => {
                                                 if (
                                                     filesSizeSum / MB_SIZE >
-                                                    10
+                                                    501
                                                 ) {
                                                     reject(
                                                         'Общий размер файлов должен быть меньше 10МБ! Ну-ка удаляем что-то!'
@@ -145,7 +151,10 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                             <Upload
                                 beforeUpload={() => false}
                                 listType="picture-card"
-                                multiple={true}
+                                // multiple={true}
+                                accept={
+                                    'image/png, image/gif, image/jpeg, image/svg'
+                                }
                                 fileList={fileList}
                                 previewFile={getBase64}
                                 onPreview={file => {

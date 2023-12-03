@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useLayoutEffect, useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import * as am5 from '@amcharts/amcharts5';
 import * as am5map from '@amcharts/amcharts5/map';
 import am5geodata_worldLow from '@amcharts/amcharts5-geodata/worldLow';
@@ -10,6 +10,7 @@ import { Circle } from '@amcharts/amcharts5';
 import { ROUTES } from '../../static/routes';
 import { circleColor, mapColor, outerCircleColor } from '../../static/const';
 import countries_ru from '../../static/countries_ru.json';
+import DetailsDrawer from '../DetailsDrawer/DetailsDrawer';
 
 interface ICity {
     id: string;
@@ -20,7 +21,15 @@ export interface IMessageData {
     total: number;
     country: string;
 }
-export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
+export const Map = () => {
+    const [activeCountry, setActiveCountry] = useState(null);
+    const onClick = useCallback((country: string) => {
+        setActiveCountry(country);
+    }, []);
+
+    const onClose = () => {
+        setActiveCountry(null);
+    };
     const { data: serverData } = useDataFromServer<IMessageData[]>({
         url: ROUTES.GEOGRAPHY,
         key: 'map-data'
@@ -179,5 +188,10 @@ export const Map = ({ onClick }: { onClick: (country: string) => void }) => {
         };
     }, [cities, onClick]);
 
-    return <div id="mapChart" style={{ width: '100%', height: '80vh' }} />;
+    return (
+        <>
+            <div id="mapChart" style={{ width: '100%', height: '80vh' }} />
+            <DetailsDrawer country={activeCountry} onClose={onClose} />
+        </>
+    );
 };
