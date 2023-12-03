@@ -123,6 +123,7 @@ const DetailsDrawer = ({
                                         onClick={() => {
                                             setReaction(item, 'like');
                                         }}
+                                        style={{ cursor: 'pointer' }}
                                     >
                                         <IconText
                                             icon={
@@ -142,6 +143,7 @@ const DetailsDrawer = ({
                                         onClick={() => {
                                             setReaction(item, 'dislike');
                                         }}
+                                        style={{ cursor: 'pointer' }}
                                     >
                                         <IconText
                                             icon={
@@ -162,6 +164,7 @@ const DetailsDrawer = ({
                                             onClick={() => {
                                                 deleteMessage(item);
                                             }}
+                                            style={{ cursor: 'pointer' }}
                                         >
                                             <DeleteFilled />
                                         </div>
