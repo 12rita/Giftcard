@@ -11,6 +11,7 @@ import { ROUTES } from '../../static/routes';
 import { circleColor, mapColor, outerCircleColor } from '../../static/const';
 import countries_ru from '../../static/countries_ru.json';
 import DetailsDrawer from '../DetailsDrawer/DetailsDrawer';
+import { useAuth } from '../AuthContext';
 
 interface ICity {
     id: string;
@@ -23,6 +24,7 @@ export interface IMessageData {
 }
 export const Map = () => {
     const [activeCountry, setActiveCountry] = useState(null);
+    const { isAuthenticated, user } = useAuth();
     const onClick = useCallback((country: string) => {
         setActiveCountry(country);
     }, []);
@@ -128,7 +130,9 @@ export const Map = () => {
             );
 
             circle2.events.on('click', ev => {
-                onClick((ev?.target?.dataItem?.dataContext as ICity)?.id);
+                isAuthenticated &&
+                    user.isWhitelisted &&
+                    onClick((ev?.target?.dataItem?.dataContext as ICity)?.id);
             });
 
             // const countryLabel = container.children.push(
@@ -186,7 +190,7 @@ export const Map = () => {
         return () => {
             root.dispose();
         };
-    }, [cities, onClick]);
+    }, [cities, isAuthenticated, onClick, user.isWhitelisted]);
 
     return (
         <>
