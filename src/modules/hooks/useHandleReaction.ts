@@ -6,8 +6,10 @@ import { ROUTES } from '../../static/routes';
 import { IDetailsData } from '../DetailsDrawer/DetailsDrawer';
 
 interface ISaveReaction {
-    messageId: number;
-    reaction: number;
+    reactions: {
+        message_id: number;
+        reaction: number;
+    }[];
 }
 interface IReactionPost {
     [key: number]: {
@@ -26,6 +28,8 @@ type TUseHandleReaction = () => {
     setLocalReaction: Dispatch<SetStateAction<IReactionPost>>;
     reaction: IReactionPost;
     deleteMessage: (item: IDetailsData) => void;
+    saveReactionGlobal: () => void;
+    loading: boolean;
 };
 export const useHandleReaction: TUseHandleReaction = () => {
     const saveReaction = useSingleMutation<ISaveReaction>(ROUTES.REACTION);
@@ -50,12 +54,28 @@ export const useHandleReaction: TUseHandleReaction = () => {
         }
     };
 
+    const saveReactionGlobal = useCallback(() => {
+        const reactions = Object.keys(reaction).map(itemId => {
+            return {
+                message_id: Number(itemId),
+                reaction: reaction[itemId].reaction
+            };
+        });
+        saveReaction.mutate(
+            { reactions },
+            {
+                // onSuccess: () =>
+                //     void queryClient.invalidateQueries(['details-data']),
+                onError: err => void message.error(err.message),
+                onSettled: () => setLoading(false)
+            }
+        );
+    }, [reaction, saveReaction]);
+
     const setReaction = useCallback(
-        (item: IDetailsData, reaction: Reaction) => {
-            if (loading) return;
-            setLoading(true);
-            if (item.isLiked) {
-                if (reaction === 'like') {
+        (item: IDetailsData, reactionAction: Reaction) => {
+            if (reaction[item.id]?.reaction === 1) {
+                if (reactionAction === 'like') {
                     setLocalReaction(prev => ({
                         ...prev,
                         [item.id]: {
@@ -64,18 +84,6 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: 0
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 0 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 } else {
                     setLocalReaction(prev => ({
                         ...prev,
@@ -85,21 +93,9 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: -1
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: -1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 }
-            } else if (item.isDisliked) {
-                if (reaction === 'like') {
+            } else if (reaction[item.id]?.reaction === -1) {
+                if (reactionAction === 'like') {
                     setLocalReaction(prev => ({
                         ...prev,
                         [item.id]: {
@@ -108,18 +104,6 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: 1
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 } else {
                     setLocalReaction(prev => ({
                         ...prev,
@@ -129,21 +113,9 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: 0
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 0 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 }
             } else {
-                if (reaction === 'like') {
+                if (reactionAction === 'like') {
                     setLocalReaction(prev => ({
                         ...prev,
                         [item.id]: {
@@ -152,18 +124,6 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: 1
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: 1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 } else {
                     setLocalReaction(prev => ({
                         ...prev,
@@ -173,23 +133,18 @@ export const useHandleReaction: TUseHandleReaction = () => {
                             reaction: -1
                         }
                     }));
-
-                    saveReaction.mutate(
-                        { messageId: item.id, reaction: -1 },
-                        {
-                            onSuccess: () =>
-                                void queryClient.invalidateQueries([
-                                    'details-data'
-                                ]),
-                            onError: err => void message.error(err.message),
-                            onSettled: () => setLoading(false)
-                        }
-                    );
                 }
             }
         },
-        [loading, saveReaction]
+        [reaction]
     );
 
-    return { setReaction, setLocalReaction, reaction, deleteMessage };
+    return {
+        setReaction,
+        setLocalReaction,
+        reaction,
+        deleteMessage,
+        saveReactionGlobal,
+        loading
+    };
 };

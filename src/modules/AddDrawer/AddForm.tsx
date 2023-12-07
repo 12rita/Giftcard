@@ -17,6 +17,7 @@ import {
 
 import { useSelect } from '../hooks/useSelect';
 import { useUpload } from '../hooks/useUpload';
+import { mentionOptions } from '../../static/const';
 
 const MB_SIZE = 1024 * 1024;
 
@@ -107,7 +108,7 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                     </Col>
                 </Row>
                 <Row gutter={16}>
-                    <Col span={12}>
+                    <Col span={24}>
                         <Form.Item
                             name="file"
                             label="Ваша прекрасная фот очка"
@@ -170,8 +171,24 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                 </Row>
                 <Row gutter={16}>
                     <Col span={24}>
+                        <Form.Item name="members" label="Кто ещё на фото">
+                            <Select
+                                mode="multiple"
+                                showSearch
+                                onChange={onChange}
+                                onSearch={onSearch}
+                                options={mentionOptions}
+                                filterOption={filterOption}
+                                placeholder="Раз кабэшник, два кабэшник..."
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={16}>
+                    <Col span={24}>
                         <Form.Item name="description" label="Описание">
                             <Input.TextArea
+                                style={{ width: '100%' }}
                                 rows={4}
                                 placeholder="Пару слов от души"
                             />

@@ -25,6 +25,7 @@ interface IPostData {
     country: string;
     files: { name: string; base64: string }[];
     description: string;
+    mentions: string;
 }
 
 const AddDrawer = () => {
@@ -57,7 +58,15 @@ const AddDrawer = () => {
 
     const onSubmit = () => {
         const values = form.getFieldsValue();
-        const { file, country, owner, dateTime, description = '' } = values;
+        const {
+            file,
+            country,
+            owner,
+            dateTime,
+            description = '',
+            members = []
+        } = values;
+
         const files = (file as UploadFile[]).map(file => ({
             name: file.name,
             base64: file.thumbUrl
@@ -71,7 +80,8 @@ const AddDrawer = () => {
                 owner,
                 country,
                 files,
-                description
+                description,
+                mentions: (members as string[]).join(',')
             },
             {
                 onSuccess: () => {

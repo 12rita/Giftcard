@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { Avatar, Drawer, List, Skeleton, Space } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { ROUTES } from '../../static/routes';
@@ -11,9 +11,10 @@ import {
     LikeOutlined
 } from '@ant-design/icons';
 import countries_ru from '../../static/countries_ru.json';
-import { backgroundColor } from '../../static/const';
+import { backgroundColor, mentionOptions } from '../../static/const';
 import { ImageCarousel } from './ImageCarousel';
 import { useHandleReaction } from '../hooks/useHandleReaction';
+import { isEqual } from 'lodash';
 
 export interface IDetailsData {
     date: string;
@@ -28,6 +29,7 @@ export interface IDetailsData {
     isDisliked: boolean;
     isDeletable: boolean;
     id: number;
+    mentions: string;
     files: {
         name: string;
         base64: string;
@@ -55,11 +57,29 @@ const DetailsDrawer = ({
         enabled: !!country
     });
     const countryName = countries_ru.Names[country] ?? country;
-    const { reaction, setLocalReaction, setReaction, deleteMessage } =
-        useHandleReaction();
+    const {
+        reaction,
+        setLocalReaction,
+        saveReactionGlobal,
+        setReaction,
+        deleteMessage,
+        loading
+    } = useHandleReaction();
     const [countryDetails, setCountryDetails] = React.useState<IDetailsData[]>(
         []
     );
+
+    const defaultReaction = useMemo(() => {
+        const reaction = {};
+        details?.data?.forEach(item => {
+            reaction[item.id] = {
+                likesCount: item.likes,
+                dislikesCount: item.dislikes,
+                reaction: item.isLiked ? 1 : item.isDisliked ? -1 : 0
+            };
+        });
+        return reaction;
+    }, [details]);
 
     useLayoutEffect(() => {
         if (!details || !details.data || isFetching) return;
@@ -86,8 +106,11 @@ const DetailsDrawer = ({
 
     const handleCLose = useCallback(() => {
         setCountryDetails([]);
+        if (!isEqual(reaction, defaultReaction)) {
+            saveReactionGlobal();
+        }
         onClose();
-    }, [onClose]);
+    }, [defaultReaction, onClose, reaction, saveReactionGlobal]);
 
     return (
         <>
@@ -100,7 +123,7 @@ const DetailsDrawer = ({
                 bodyStyle={{ paddingBottom: 80 }}
                 // headerStyle={{ color: 'white' }}
             >
-                {isFetching ? (
+                {isFetching || loading ? (
                     <ListLoader />
                 ) : (
                     <List
@@ -114,91 +137,111 @@ const DetailsDrawer = ({
                                 : null
                         }
                         dataSource={countryDetails}
-                        renderItem={(item: IDetailsData) => (
-                            <List.Item
-                                key={item.date + item.name}
-                                actions={[
-                                    <div
-                                        key="list-vertical-like-o"
-                                        onClick={() => {
-                                            setReaction(item, 'like');
-                                        }}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <IconText
-                                            icon={
-                                                reaction[item.id]?.reaction ===
-                                                1
-                                                    ? LikeFilled
-                                                    : LikeOutlined
-                                            }
-                                            text={`${
-                                                reaction[item.id]?.likesCount ||
-                                                0
-                                            }`}
-                                        />
-                                    </div>,
-                                    <div
-                                        key="list-vertical-dislike-o"
-                                        onClick={() => {
-                                            setReaction(item, 'dislike');
-                                        }}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <IconText
-                                            icon={
-                                                reaction[item.id]?.reaction ===
-                                                -1
-                                                    ? DislikeFilled
-                                                    : DislikeOutlined
-                                            }
-                                            text={`${
-                                                reaction[item.id]
-                                                    ?.dislikesCount || 0
-                                            }`}
-                                        />
-                                    </div>,
-                                    item.isDeletable && (
+                        renderItem={(item: IDetailsData) => {
+                            const mentions = (item.mentions || '')
+                                .split(',')
+                                .map(
+                                    mention =>
+                                        mentionOptions.find(
+                                            option => option.value === mention
+                                        )?.label || mention
+                                )
+                                .join(', ');
+
+                            return (
+                                <List.Item
+                                    key={item.date + item.name}
+                                    actions={[
                                         <div
-                                            key="list-vertical-delete-o"
+                                            key="list-vertical-like-o"
                                             onClick={() => {
-                                                deleteMessage(item);
+                                                setReaction(item, 'like');
                                             }}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <DeleteFilled />
-                                        </div>
-                                    )
-                                ]}
-                            >
-                                <List.Item.Meta
-                                    style={{ color: 'white' }}
-                                    avatar={<Avatar src={item.picture} />}
-                                    title={
+                                            <IconText
+                                                icon={
+                                                    reaction[item.id]
+                                                        ?.reaction === 1
+                                                        ? LikeFilled
+                                                        : LikeOutlined
+                                                }
+                                                text={`${
+                                                    reaction[item.id]
+                                                        ?.likesCount || 0
+                                                }`}
+                                            />
+                                        </div>,
                                         <div
-                                            style={{
-                                                display: 'flex',
-                                                gap: '16px',
-                                                alignItems: 'baseline'
+                                            key="list-vertical-dislike-o"
+                                            onClick={() => {
+                                                setReaction(item, 'dislike');
                                             }}
+                                            style={{ cursor: 'pointer' }}
                                         >
-                                            <div> {item.name}</div>
+                                            <IconText
+                                                icon={
+                                                    reaction[item.id]
+                                                        ?.reaction === -1
+                                                        ? DislikeFilled
+                                                        : DislikeOutlined
+                                                }
+                                                text={`${
+                                                    reaction[item.id]
+                                                        ?.dislikesCount || 0
+                                                }`}
+                                            />
+                                        </div>,
+                                        item.isDeletable && (
+                                            <div
+                                                key="list-vertical-delete-o"
+                                                onClick={() => {
+                                                    deleteMessage(item);
+                                                }}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <DeleteFilled />
+                                            </div>
+                                        )
+                                    ]}
+                                >
+                                    <List.Item.Meta
+                                        style={{ color: 'white' }}
+                                        avatar={<Avatar src={item.picture} />}
+                                        title={
                                             <div
                                                 style={{
-                                                    color: 'rgba(255, 255, 255, 0.45)',
-                                                    fontSize: '14px'
+                                                    display: 'flex',
+                                                    gap: '16px',
+                                                    alignItems: 'baseline'
                                                 }}
                                             >
-                                                {getDate(item.date)}
+                                                <div> {item.name}</div>
+                                                <div
+                                                    style={{
+                                                        color: 'rgba(255, 255, 255, 0.45)',
+                                                        fontSize: '14px'
+                                                    }}
+                                                >
+                                                    {getDate(item.date)}
+                                                </div>
                                             </div>
-                                        </div>
-                                    }
-                                    description={item.description}
-                                />
+                                        }
+                                        description={item.description}
+                                    />
 
-                                <ImageCarousel files={item.files} />
-                            </List.Item>
-                        )}
+                                    <ImageCarousel files={item.files} />
+                                    <List.Item.Meta
+                                        style={{ marginTop: '16px' }}
+                                        description={
+                                            mentions
+                                                ? 'На фото: ' + mentions
+                                                : ''
+                                        }
+                                    />
+                                </List.Item>
+                            );
+                        }}
                     />
                 )}
             </Drawer>
