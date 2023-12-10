@@ -232,6 +232,7 @@ const DetailsDrawer = ({
                                         }
                                         description={
                                             <DescriptionPart
+                                                isEditable={item.isDeletable}
                                                 id={item.id}
                                                 description={item.description}
                                             />
@@ -243,6 +244,7 @@ const DetailsDrawer = ({
                                         style={{ marginTop: '16px' }}
                                         description={
                                             <MentionsPart
+                                                isEditable={item.isDeletable}
                                                 mentions={item.mentions}
                                                 id={item.id}
                                             />
@@ -262,10 +264,11 @@ interface ISaveDescription {
     description: string;
     messageId: number;
 }
-const DescriptionPart: React.FC<{ description: string; id: number }> = ({
-    description,
-    id
-}) => {
+const DescriptionPart: React.FC<{
+    description: string;
+    id: number;
+    isEditable: boolean;
+}> = ({ description, id, isEditable }) => {
     const [editable, setEditable] = useState(false);
     const [value, setValue] = useState('');
     const saveData = useSingleMutation<ISaveDescription>(
@@ -328,10 +331,12 @@ const DescriptionPart: React.FC<{ description: string; id: number }> = ({
             ) : (
                 <div>
                     {value || 'Добавьте описание'}
-                    <EditOutlined
-                        style={{ marginLeft: '8px' }}
-                        onClick={handleEdit}
-                    />
+                    {isEditable && (
+                        <EditOutlined
+                            style={{ marginLeft: '8px' }}
+                            onClick={handleEdit}
+                        />
+                    )}
                 </div>
             )}
         </div>
@@ -342,10 +347,11 @@ interface ISaveMentions {
     messageId: number;
     mentions: string;
 }
-const MentionsPart: React.FC<{ mentions: string; id: number }> = ({
-    mentions,
-    id
-}) => {
+const MentionsPart: React.FC<{
+    mentions: string;
+    id: number;
+    isEditable: boolean;
+}> = ({ mentions, id, isEditable }) => {
     const [editable, setEditable] = useState(false);
     const [value, setValue] = useState([] as string[]);
     const saveData = useSingleMutation<ISaveMentions>(ROUTES.MENTIONS_EDIT);
@@ -439,10 +445,12 @@ const MentionsPart: React.FC<{ mentions: string; id: number }> = ({
             ) : (
                 <div>
                     {'На фото: ' + mentionDisplay || 'Добавьте кабэшников'}
-                    <EditOutlined
-                        style={{ marginLeft: '8px' }}
-                        onClick={handleEdit}
-                    />
+                    {isEditable && (
+                        <EditOutlined
+                            style={{ marginLeft: '8px' }}
+                            onClick={handleEdit}
+                        />
+                    )}
                 </div>
             )}
         </div>
