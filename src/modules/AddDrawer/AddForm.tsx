@@ -171,7 +171,16 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                 </Row>
                 <Row gutter={16}>
                     <Col span={24}>
-                        <Form.Item name="members" label="Кто ещё на фото">
+                        <Form.Item
+                            name="members"
+                            label="Кто на фото (включая себя)"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Нужно отметить хотя бы себя!'
+                                }
+                            ]}
+                        >
                             <Select
                                 mode="multiple"
                                 showSearch

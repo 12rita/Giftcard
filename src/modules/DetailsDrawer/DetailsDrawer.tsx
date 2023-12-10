@@ -27,6 +27,7 @@ import { isEqual } from 'lodash';
 import TextArea from 'antd/es/input/TextArea';
 import { useSingleMutation } from '../hooks/useSingleMutation';
 import { useSelect } from '../hooks/useSelect';
+import { queryClient } from '../../App';
 
 export interface IDetailsData {
     date: string;
@@ -294,6 +295,7 @@ const DescriptionPart: React.FC<{ description: string; id: number }> = ({
             {
                 onSuccess: () => {
                     setEditable(false);
+                    void queryClient.invalidateQueries(['map-data']);
                     // setValue(value);
                 },
                 onError: err => {
@@ -398,6 +400,7 @@ const MentionsPart: React.FC<{ mentions: string; id: number }> = ({
             {
                 onSuccess: () => {
                     setEditable(false);
+                    void queryClient.invalidateQueries(['map-data']);
                     // setValue(value);
                 },
                 onError: err => {

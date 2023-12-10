@@ -122,7 +122,7 @@ export const Map = () => {
                         fillOpacity: 0.7,
                         fill: am5.color(outerCircleColor),
                         cursorOverStyle: 'pointer',
-                        tooltipText: `{name}: [bold]{value}[/]`
+                        tooltipText: `{name} \n[bold]Кабэшников побывало: [/]{value}`
                     },
 
                     circleTemplate
