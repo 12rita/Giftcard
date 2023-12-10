@@ -1,5 +1,5 @@
 export enum ROUTES {
-    HOME = '/',
+    // HOME = '/',
     LOGIN = 'api/login',
     GEOGRAPHY = '/api/map',
     DETAILS = '/api/details',
@@ -7,5 +7,7 @@ export enum ROUTES {
     USER = '/api/user',
     LOGOUT = '/api/logout',
     REACTION = '/api/reaction',
-    MESSAGE_DELETE = '/api/message/delete'
+    MESSAGE_DELETE = '/api/message/delete',
+    DESCRIPTION_EDIT = '/api/description/edit',
+    MENTIONS_EDIT = '/api/mentions/edit'
 }

@@ -1,12 +1,21 @@
 import * as React from 'react';
-import { useCallback, useLayoutEffect, useMemo } from 'react';
-import { Avatar, Drawer, List, Skeleton, Space } from 'antd';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useState
+} from 'react';
+import { Avatar, Drawer, List, message, Select, Skeleton, Space } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { ROUTES } from '../../static/routes';
 import {
+    CheckOutlined,
+    CloseOutlined,
     DeleteFilled,
     DislikeFilled,
     DislikeOutlined,
+    EditOutlined,
     LikeFilled,
     LikeOutlined
 } from '@ant-design/icons';
@@ -15,6 +24,9 @@ import { backgroundColor, mentionOptions } from '../../static/const';
 import { ImageCarousel } from './ImageCarousel';
 import { useHandleReaction } from '../hooks/useHandleReaction';
 import { isEqual } from 'lodash';
+import TextArea from 'antd/es/input/TextArea';
+import { useSingleMutation } from '../hooks/useSingleMutation';
+import { useSelect } from '../hooks/useSelect';
 
 export interface IDetailsData {
     date: string;
@@ -138,16 +150,6 @@ const DetailsDrawer = ({
                         }
                         dataSource={countryDetails}
                         renderItem={(item: IDetailsData) => {
-                            const mentions = (item.mentions || '')
-                                .split(',')
-                                .map(
-                                    mention =>
-                                        mentionOptions.find(
-                                            option => option.value === mention
-                                        )?.label || mention
-                                )
-                                .join(', ');
-
                             return (
                                 <List.Item
                                     key={item.date + item.name}
@@ -227,16 +229,22 @@ const DetailsDrawer = ({
                                                 </div>
                                             </div>
                                         }
-                                        description={item.description}
+                                        description={
+                                            <DescriptionPart
+                                                id={item.id}
+                                                description={item.description}
+                                            />
+                                        }
                                     />
 
                                     <ImageCarousel files={item.files} />
                                     <List.Item.Meta
                                         style={{ marginTop: '16px' }}
                                         description={
-                                            mentions
-                                                ? 'На фото: ' + mentions
-                                                : ''
+                                            <MentionsPart
+                                                mentions={item.mentions}
+                                                id={item.id}
+                                            />
                                         }
                                     />
                                 </List.Item>
@@ -249,6 +257,194 @@ const DetailsDrawer = ({
     );
 };
 
+interface ISaveDescription {
+    description: string;
+    messageId: number;
+}
+const DescriptionPart: React.FC<{ description: string; id: number }> = ({
+    description,
+    id
+}) => {
+    const [editable, setEditable] = useState(false);
+    const [value, setValue] = useState('');
+    const saveData = useSingleMutation<ISaveDescription>(
+        ROUTES.DESCRIPTION_EDIT
+    );
+
+    useEffect(() => {
+        setValue(description);
+    }, [description]);
+
+    const onChange = useCallback((ev: { target: { value: string } }) => {
+        setValue(ev.target.value);
+    }, []);
+
+    const handleEdit = useCallback(() => {
+        setEditable(true);
+    }, []);
+
+    const onCancel = useCallback(() => {
+        setEditable(false);
+        setValue(description);
+    }, [description]);
+
+    const save = useCallback(() => {
+        saveData.mutate(
+            { description: value, messageId: id },
+            {
+                onSuccess: () => {
+                    setEditable(false);
+                    // setValue(value);
+                },
+                onError: err => {
+                    void message.error(err.message);
+                }
+            }
+        );
+    }, [id, saveData, value]);
+    return (
+        <div>
+            {editable ? (
+                <div>
+                    <TextArea
+                        value={value}
+                        onChange={onChange}
+                        placeholder={'Добавьте описание'}
+                    />
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginTop: '8px',
+                            justifyContent: 'flex-end'
+                        }}
+                    >
+                        <CheckOutlined onClick={save} />
+                        <CloseOutlined onClick={onCancel} />
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    {value || 'Добавьте описание'}
+                    <EditOutlined
+                        style={{ marginLeft: '8px' }}
+                        onClick={handleEdit}
+                    />
+                </div>
+            )}
+        </div>
+    );
+};
+
+interface ISaveMentions {
+    messageId: number;
+    mentions: string;
+}
+const MentionsPart: React.FC<{ mentions: string; id: number }> = ({
+    mentions,
+    id
+}) => {
+    const [editable, setEditable] = useState(false);
+    const [value, setValue] = useState([] as string[]);
+    const saveData = useSingleMutation<ISaveMentions>(ROUTES.MENTIONS_EDIT);
+
+    const mentionValue = useMemo(() => {
+        if (!mentions) return [];
+        return (mentions || '')
+            .split(',')
+            .map(
+                mention =>
+                    mentionOptions.find(option => option.value === mention)
+                        ?.value
+            );
+    }, [mentions]);
+
+    const mentionDisplay = useMemo(() => {
+        if (!value) return '';
+        return value
+            .map(
+                mention =>
+                    mentionOptions.find(option => option.value === mention)
+                        ?.label
+            )
+            .join(', ');
+    }, [value]);
+
+    const setDefault = useCallback(() => {
+        setValue(mentionValue);
+    }, [mentionValue]);
+
+    useEffect(() => {
+        setDefault();
+    }, [mentions, setDefault]);
+    const { onSearch, filterOption } = useSelect();
+
+    const onChange = useCallback((val: string[]) => {
+        setValue(val);
+    }, []);
+
+    const handleEdit = useCallback(() => {
+        setEditable(true);
+    }, []);
+
+    const onCancel = useCallback(() => {
+        setEditable(false);
+        setDefault();
+    }, [setDefault]);
+
+    const save = useCallback(() => {
+        saveData.mutate(
+            { mentions: value.join(','), messageId: id },
+            {
+                onSuccess: () => {
+                    setEditable(false);
+                    // setValue(value);
+                },
+                onError: err => {
+                    void message.error(err.message);
+                }
+            }
+        );
+    }, [id, saveData, value]);
+    return (
+        <div>
+            {editable ? (
+                <div>
+                    <Select
+                        style={{ width: '100%' }}
+                        mode="multiple"
+                        showSearch
+                        onChange={onChange}
+                        value={value}
+                        onSearch={onSearch}
+                        options={mentionOptions}
+                        filterOption={filterOption}
+                        placeholder="Раз кабэшник, два кабэшник..."
+                    />
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: '8px',
+                            marginTop: '8px',
+                            justifyContent: 'flex-end'
+                        }}
+                    >
+                        <CheckOutlined onClick={save} />
+                        <CloseOutlined onClick={onCancel} />
+                    </div>
+                </div>
+            ) : (
+                <div>
+                    {'На фото: ' + mentionDisplay || 'Добавьте кабэшников'}
+                    <EditOutlined
+                        style={{ marginLeft: '8px' }}
+                        onClick={handleEdit}
+                    />
+                </div>
+            )}
+        </div>
+    );
+};
 const ListLoader = () => {
     return (
         <List
