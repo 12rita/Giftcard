@@ -18,6 +18,7 @@ import {
 import { useSelect } from '../hooks/useSelect';
 import { useUpload } from '../hooks/useUpload';
 import { mentionOptions } from '../../static/const';
+import { useCallback } from 'react';
 
 const MB_SIZE = 1024 * 1024;
 
@@ -38,6 +39,16 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
         handleCancel,
         getBase64
     } = useUpload();
+    const disabledDate = useCallback(current => {
+        const thisYear = new Date().getFullYear();
+        const minDate = new Date().setFullYear(thisYear, 0, 1);
+        const maxDate = new Date().setFullYear(thisYear, 11, 31);
+        return (
+            current &&
+            ((current as Date).valueOf() < minDate ||
+                (current as Date).valueOf() > maxDate)
+        );
+    }, []);
 
     const uploadButton = (
         <div>
@@ -101,6 +112,7 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                         >
                             <DatePicker
                                 onChange={() => {}}
+                                disabledDate={disabledDate}
                                 picker="month"
                                 placeholder="Выберите месяц"
                             />
