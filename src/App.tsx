@@ -7,6 +7,7 @@ import { AuthProvider } from './modules/AuthContext';
 import { Header } from './modules/Header/Header';
 import { ConfigProvider, theme } from 'antd';
 import { backgroundColor } from './static/const';
+import { Statistics } from './modules/Statistics/Statistics';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -37,6 +38,7 @@ const App = () => {
                             >
                                 <Header />
                                 <Map />
+                                <Statistics />
                             </div>
                         </div>
                     </ConfigProvider>
