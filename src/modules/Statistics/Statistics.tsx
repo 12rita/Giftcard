@@ -2,17 +2,28 @@ import * as React from 'react';
 import { Card } from 'antd';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { ROUTES } from '../../static/routes';
+import { useMemo } from 'react';
+import { mentionOptions } from '../../static/const';
 
 const { Meta } = Card;
 interface IStatisticsProps {
     countriesCount: number;
-    homeless: { id: number; name: string; countriesCount: number }[];
+    countiesInfo: { [key: string]: string[] };
+    homeless: { name: string; countriesCount: number }[];
 }
 export const Statistics = () => {
     const { data, isFetching } = useDataFromServer<IStatisticsProps>({
         url: ROUTES.STATISTICS,
         key: 'statistics-data'
     });
+
+    const humans = useMemo(() => {
+        if (!data) return [];
+        return data?.data?.homeless?.map(({ name }) => {
+            return mentionOptions.find(option => option.value === name)?.label;
+        });
+    }, [data]);
+
     return (
         <Card
             style={{
@@ -36,13 +47,11 @@ export const Statistics = () => {
                             {data?.data.countriesCount}
                         </div>
                         <div>
-                            {data?.data.homeless.length > 1
+                            {humans.length > 1
                                 ? 'Самые шиложопые кабэшники'
                                 : 'Самый шиложопый кабэшник'}
                             {': '}
-                            {data?.data.homeless
-                                .map(item => item.name)
-                                .join(', ')}
+                            {humans.join(', ')}
                         </div>
                     </div>
                 }
