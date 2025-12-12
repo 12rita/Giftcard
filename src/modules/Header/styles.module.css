@@ -1,0 +1,16 @@
+
+.header {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: 'Beer money', sans-serif;
+    font-size: 64px;
+    font-weight: 500;
+}
+
+.dropdown {
+    color: #dc5829;
+    cursor: pointer;
+}

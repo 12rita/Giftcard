@@ -39,16 +39,16 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
         handleCancel,
         getBase64
     } = useUpload();
-    const disabledDate = useCallback(current => {
-        const thisYear = new Date().getFullYear();
-        const minDate = new Date().setFullYear(thisYear, 0, 1);
-        const maxDate = new Date().setFullYear(thisYear, 11, 31);
-        return (
-            current &&
-            ((current as Date).valueOf() < minDate ||
-                (current as Date).valueOf() > maxDate)
-        );
-    }, []);
+    // const disabledDate = useCallback(current => {
+    //     const thisYear = new Date().getFullYear();
+    //     const minDate = new Date().setFullYear(thisYear, 0, 1);
+    //     const maxDate = new Date().setFullYear(thisYear, 11, 31);
+    //     return (
+    //         current &&
+    //         ((current as Date).valueOf() < minDate ||
+    //             (current as Date).valueOf() > maxDate)
+    //     );
+    // }, []);
 
     const uploadButton = (
         <div>
@@ -112,7 +112,7 @@ export const AddForm: React.FC<IAddForm> = ({ form }) => {
                         >
                             <DatePicker
                                 onChange={() => {}}
-                                disabledDate={disabledDate}
+                                // disabledDate={disabledDate}
                                 picker="month"
                                 placeholder="Выберите месяц"
                             />

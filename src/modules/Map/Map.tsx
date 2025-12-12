@@ -12,6 +12,8 @@ import { circleColor, mapColor, outerCircleColor } from '../../static/const';
 import countries_ru from '../../static/countries_ru.json';
 import DetailsDrawer from '../DetailsDrawer/DetailsDrawer';
 import { useAuth } from '../AuthContext';
+import { getQueryParam } from '../../utils/getQueryParams';
+import { useSearchParams } from 'react-router';
 
 interface ICity {
     id: string;
@@ -24,17 +26,28 @@ export interface IMessageData {
 }
 export const Map = () => {
     const [activeCountry, setActiveCountry] = useState(null);
+
     const { isAuthenticated, user } = useAuth();
+    const [searchParams] = useSearchParams();
+
     const onClick = useCallback((country: string) => {
         setActiveCountry(country);
     }, []);
 
+    const year = useMemo(() => {
+        return searchParams.get('date');
+    }, [searchParams]);
+
     const onClose = () => {
         setActiveCountry(null);
     };
+
     const { data: serverData } = useDataFromServer<IMessageData[]>({
         url: ROUTES.GEOGRAPHY,
-        key: 'map-data'
+        key: ['year', year],
+        params: {
+            date: year
+        }
     });
 
     const cities: ICity[] = useMemo(() => {

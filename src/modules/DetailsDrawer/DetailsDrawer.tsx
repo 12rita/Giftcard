@@ -28,6 +28,7 @@ import TextArea from 'antd/es/input/TextArea';
 import { useSingleMutation } from '../hooks/useSingleMutation';
 import { useSelect } from '../hooks/useSelect';
 import { queryClient } from '../../App';
+import { useSearchParams } from 'react-router';
 
 export interface IDetailsData {
     date: string;
@@ -63,10 +64,16 @@ const DetailsDrawer = ({
     country: string;
     onClose: () => void;
 }) => {
+    const [searchParams] = useSearchParams();
+
+    const year = useMemo(() => {
+        return searchParams.get('date');
+    }, [searchParams]);
+
     const { data: details, isFetching } = useDataFromServer<IDetailsData[]>({
         url: ROUTES.DETAILS,
-        params: { country },
-        key: 'details-data',
+        params: { country, year },
+        key: [country, year],
         enabled: !!country
     });
     const countryName = countries_ru.Names[country] ?? country;

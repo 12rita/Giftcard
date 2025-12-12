@@ -8,7 +8,7 @@ export const getDataFromServer = async <T>(
 
 interface IDataProps {
     url: string;
-    key: string;
+    key: string | string[];
     enabled?: boolean;
     params?: any;
 }
@@ -19,13 +19,12 @@ export const useDataFromServer = <T>({
     params
 }: IDataProps) => {
     return useQuery({
-        keepPreviousData: true,
-        enabled: enabled,
-        queryKey: [key],
+        //@ts-ignore
+        enabled,
+        queryKey: key,
         queryFn: async () => {
             return await getDataFromServer<T>(url, params);
         },
-        // onSettled: (data, error) => console.log(data),
         retry: 1
     });
 };

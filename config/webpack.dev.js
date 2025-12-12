@@ -31,11 +31,12 @@ module.exports = merge(common(), {
         compress: true,
         hot: true,
         port: 8080,
-        proxy: {
-            '/api': {
+        proxy: [
+            {
+                context: ['/api'],
                 target: 'http://localhost:3000'
             }
-        }
+        ]
     },
 
     plugins: [

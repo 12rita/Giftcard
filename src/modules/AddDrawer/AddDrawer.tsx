@@ -87,7 +87,7 @@ const AddDrawer = () => {
                 onSuccess: () => {
                     void message.success('Ваша фоточка успешно загружена!');
                     onClose();
-                    void queryClient.invalidateQueries(['map-data']);
+                    void queryClient.invalidateQueries({ queryKey: ['year'] });
                 },
                 onError: () => {
                     void message.error('Всё сломалось, переделывай!');

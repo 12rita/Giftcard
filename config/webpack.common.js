@@ -3,7 +3,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
-const path = require("path");
+const path = require('path');
 
 module.exports = () => {
     // const env = dotenv.config().parsed;
@@ -16,7 +16,6 @@ module.exports = () => {
     return {
         // Where webpack looks to start building the bundle
         entry: ['./src/index.tsx'],
-
 
         // Where webpack outputs the assets and bundles
         output: {
@@ -64,7 +63,7 @@ module.exports = () => {
                 path.join(__dirname, 'src/modules'),
                 path.join(__dirname, 'src/static'),
                 'node_modules'
-            ],
+            ]
         },
 
         // Determine how modules within the project are treated
@@ -85,8 +84,7 @@ module.exports = () => {
                         {
                             loader: 'css-loader',
                             options: { sourceMap: true, importLoaders: 1 }
-                        },
-                        { loader: 'sass-loader', options: { sourceMap: true } }
+                        }
                     ]
                 },
 

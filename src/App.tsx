@@ -8,6 +8,7 @@ import { Header } from './modules/Header/Header';
 import { ConfigProvider, theme } from 'antd';
 import { backgroundColor } from './static/const';
 import { Statistics } from './modules/Statistics/Statistics';
+import { BrowserRouter, Router } from 'react-router-dom';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -20,30 +21,32 @@ export const queryClient = new QueryClient({
 const App = () => {
     return (
         <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
-            <QueryClientProvider client={queryClient}>
-                <AuthProvider>
-                    <ConfigProvider
-                        theme={{
-                            token: {
-                                colorPrimary: '#ff642d'
-                                // colorPrimaryBg: 'rgba(38,47,70,0.9)'
-                            },
-                            algorithm: theme.darkAlgorithm
-                        }}
-                    >
-                        <div className={'wrapper'}>
-                            <div
-                                className="app-container"
-                                style={{ background: backgroundColor }}
-                            >
-                                <Header />
-                                <Map />
-                                <Statistics />
+            <BrowserRouter>
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>
+                        <ConfigProvider
+                            theme={{
+                                token: {
+                                    colorPrimary: '#ff642d'
+                                    // colorPrimaryBg: 'rgba(38,47,70,0.9)'
+                                },
+                                algorithm: theme.darkAlgorithm
+                            }}
+                        >
+                            <div className={'wrapper'}>
+                                <div
+                                    className="app-container"
+                                    style={{ background: backgroundColor }}
+                                >
+                                    <Header />
+                                    <Map />
+                                    <Statistics />
+                                </div>
                             </div>
-                        </div>
-                    </ConfigProvider>
-                </AuthProvider>
-            </QueryClientProvider>
+                        </ConfigProvider>
+                    </AuthProvider>
+                </QueryClientProvider>
+            </BrowserRouter>
         </GoogleOAuthProvider>
     );
 };
