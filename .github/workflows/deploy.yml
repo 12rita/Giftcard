@@ -36,12 +36,12 @@ jobs:
           script_stop: true
           script: |
             set -e
-            cd /root/Giftcard
+            cd /deploy/Giftcard
             git pull
             npm ci
             npm run build
             rm -rf /var/www/front/
-            cp -R /root/Giftcard/dist/ /var/www/front
+            cp -R /deploy/Giftcard/dist/ /var/www/front
             chown nginx:nginx /var/www -R
             supervisorctl restart all
 
