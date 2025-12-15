@@ -2,4 +2,3 @@
 /.idea
 /dist
 .env
-/package-lock.json
