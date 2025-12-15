@@ -18,9 +18,11 @@ export const queryClient = new QueryClient({
     }
 });
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_CLIENT_ID as string;
+
 const App = () => {
     return (
-        <GoogleOAuthProvider clientId={process.env.REACT_APP_CLIENT_ID}>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
             <BrowserRouter>
                 <QueryClientProvider client={queryClient}>
                     <AuthProvider>

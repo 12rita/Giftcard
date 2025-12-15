@@ -48,6 +48,6 @@
   "globals": {
     "require": true
   },
-  "ignorePatterns": ["webpack.config.ts", "node_modules/", "config"]
+  "ignorePatterns": ["webpack.config.ts", "node_modules/", "config", "vite.config.ts"]
 
 }

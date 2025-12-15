@@ -1,4 +1,5 @@
 import { api, Api } from './api';
-import { ResponseData, IError } from './types';
+import type { ResponseData, IError } from './types';
 
-export { api, Api, ResponseData, IError };
+export { api, Api };
+export type { ResponseData, IError };
