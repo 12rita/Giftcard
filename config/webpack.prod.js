@@ -2,7 +2,7 @@ const paths = require('./paths');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 // const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -25,6 +25,24 @@ module.exports = merge(common(), {
     module: {
         rules: [
             {
+                test: /\.module\.(scss|css)$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            importLoaders: 2,
+                            sourceMap: false,
+                            modules: {
+                                localIdentName:
+                                    '[name]__[local]___[hash:base64:5]' // Optional: Customize class names (e.g., Header__title___abc12)
+                            }
+                        }
+                    },
+                    'sass-loader'
+                ]
+            },
+            {
                 test: /\.(scss|css)$/,
                 use: [
                     MiniCssExtractPlugin.loader,
@@ -42,7 +60,7 @@ module.exports = merge(common(), {
     },
     optimization: {
         minimize: true,
-        minimizer: [  new CssMinimizerPlugin(), new TerserPlugin()],
+        minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
         // Once your build outputs multiple chunks, this option will ensure they share the webpack runtime
         // instead of having their own. This also helps with long-term caching, since the chunks will only
         // change when actual code changes, not the webpack runtime.

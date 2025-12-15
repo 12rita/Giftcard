@@ -1,7 +1,7 @@
 import AddDrawer from '../AddDrawer/AddDrawer';
 import * as React from 'react';
 import { Profile } from '../Profile/Profile';
-// import cn from 'cn';
+// import cn from 'classnames';
 import { Dropdown, MenuProps, Space } from 'antd';
 import styles from './styles.module.css';
 import { useDataFromServer } from '../hooks/useDataFromServer';

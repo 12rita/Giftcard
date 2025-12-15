@@ -12,7 +12,6 @@ import { circleColor, mapColor, outerCircleColor } from '../../static/const';
 import countries_ru from '../../static/countries_ru.json';
 import DetailsDrawer from '../DetailsDrawer/DetailsDrawer';
 import { useAuth } from '../AuthContext';
-import { getQueryParam } from '../../utils/getQueryParams';
 import { useSearchParams } from 'react-router';
 
 interface ICity {
