@@ -4,8 +4,7 @@ import {
     UseMutationOptions,
     UseMutationResult
 } from '@tanstack/react-query';
-import { api } from '../../api';
-import type { IError, ResponseData } from '../../api';
+import { api, IError, ResponseData } from '../../api';
 
 const mutate = <TVariables, TResult>(
     path: string,
