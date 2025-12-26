@@ -111,8 +111,10 @@ const AddDrawer = () => {
                 width={720}
                 onClose={onClose}
                 open={open}
-                bodyStyle={{ paddingBottom: 80 }}
-                drawerStyle={{ background: backgroundColor }}
+                styles={{
+                    content: { background: backgroundColor },
+                    body: { paddingBottom: 80 }
+                }}
                 extra={
                     isAuthenticated && user.isWhitelisted ? (
                         <Space>

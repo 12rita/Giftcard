@@ -8,7 +8,12 @@ import am5themes_Dark from '@amcharts/amcharts5/themes/Dark';
 import { useDataFromServer } from '../hooks/useDataFromServer';
 import { Circle } from '@amcharts/amcharts5';
 import { ROUTES } from '../../static/routes';
-import { circleColor, mapColor, outerCircleColor } from '../../static/const';
+import {
+    circleColor,
+    mapColor,
+    outerCircleColor,
+    textColor
+} from '../../static/const';
 import countries_ru from '../../static/countries_ru.json';
 import DetailsDrawer from '../DetailsDrawer/DetailsDrawer';
 import { useAuth } from '../AuthContext';
@@ -19,10 +24,12 @@ interface ICity {
     name: string;
     value: number;
 }
+
 export interface IMessageData {
     total: number;
     country: string;
 }
+
 export const Map = () => {
     const [activeCountry, setActiveCountry] = useState(null);
 
@@ -71,18 +78,8 @@ export const Map = () => {
                 panX: 'rotateX'
             })
         );
-        // const gradient = am5.LinearGradient.new(root, {
-        //     stops: [
-        //         {
-        //             color: am5.color('#312976')
-        //         },
-        //         {
-        //             color: am5.color('#826AB4')
-        //         }
-        //     ]
-        // });
 
-        chart.series.push(
+        const polygonSeries = chart.series.push(
             am5map.MapPolygonSeries.new(root, {
                 geoJSON: am5geodata_worldLow,
                 fill: am5.color(mapColor),
@@ -90,15 +87,6 @@ export const Map = () => {
                 exclude: ['AQ']
             })
         );
-        // polygons.mapPolygons.template.setAll({ fill: gradient });
-        // polygons. = gradient;
-
-        // const pointSeries = chart.series.push(
-        //     am5map.MapPointSeries.new(root, {
-        //         // @ts-ignore
-        //         geoJSON: cities
-        //     })
-        // );
 
         const bubbleSeries = chart.series.push(
             am5map.MapPointSeries.new(root, {
@@ -147,20 +135,6 @@ export const Map = () => {
                     onClick((ev?.target?.dataItem?.dataContext as ICity)?.id);
             });
 
-            // const countryLabel = container.children.push(
-            //     am5.Label.new(root, {
-            //         text: '{name}',
-            //         paddingLeft: 5,
-            //         populateText: true,
-            //         fontWeight: 'bold',
-            //         fontSize: 13,
-            //         centerY: am5.p50
-            //     })
-            // );
-            //
-            // circle.on('radius', function (radius) {
-            //     countryLabel.set('x', radius);
-            // });
             circle2.animate({
                 key: 'radius',
                 from: 10,
@@ -183,18 +157,12 @@ export const Map = () => {
                 dynamic: true
             });
         });
-
-        // minValue and maxValue must be set for the animations to work
-        // bubbleSeries.set('heatRules', [
-        //     {
-        //         target: circleTemplate,
-        //         dataField: 'value',
-        //         min: 10,
-        //         max: 50,
-        //         key: 'radius'
-        //     }
-        // ]);
-
+        // polygonSeries.data.setAll(
+        //     cities.map(city => ({
+        //         id: city.id,
+        //         polygonSeries: { fill: am5.color(textColor), fillOpacity: 0.7 }
+        //     }))
+        // );
         bubbleSeries.data.setAll(cities);
 
         void bubbleSeries.appear(1000);

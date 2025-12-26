@@ -10,8 +10,10 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 
 export const Header: React.FC = () => {
-    const [year, setYear] = React.useState('');
     const [searchParams, setSearchParams] = useSearchParams();
+    const [year, setYear] = React.useState(
+        () => searchParams.get('date') || ''
+    );
     const { data, isFetching } = useDataFromServer<string[]>({
         url: ROUTES.YEARS,
         key: 'years'

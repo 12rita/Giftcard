@@ -21,7 +21,7 @@ export const useDataFromServer = <T>({
     return useQuery({
         //@ts-ignore
         enabled,
-        queryKey: key,
+        queryKey: [key],
         queryFn: async () => {
             return await getDataFromServer<T>(url, params);
         },
